@@ -18,7 +18,7 @@ export default function Home() {
   const [amount, setAmount] = useState("100");
   const [plans, setPlans] = useState<Plan[]>([]);
   const [plan, setPlan] = useState("");
-  const [markup, setMarkup] = useState(30);
+  const [markup] = useState(Number(process.env.NEXT_PUBLIC_COMMISSION_NAIRA || "30"));
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
