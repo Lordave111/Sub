@@ -22,7 +22,7 @@ Import this repository into Vercel. Framework preset: Next.js; Root Directory: `
 Start with `VTU_SANDBOX=true` and Paystack test keys. Test successful, pending, failed, and duplicate callback scenarios before switching to live credentials and `VTU_SANDBOX=false`.
 
 ## Commission
-The starter UI currently adds a fixed ₦30 fee. The checkout API validates the submitted fee but this is a prototype setting, not a production admin control. Before going live, move commission to a server-controlled settings table/admin-only API so customers cannot manipulate it. Also configure support contact details, order lookup, account authentication, and provider callback/requery handling.
+Set `COMMISSION_NAIRA` on the server and `NEXT_PUBLIC_COMMISSION_NAIRA` to the same display value (default ₦30). The server calculates the final commission and ignores any fee submitted by the browser. Change both environment values together when adjusting your fee. Also configure support contact details, order lookup, account authentication, and provider callback/requery handling.
 
 ## Important production notes
 - Do not enable live VTpass or live Paystack keys until sandbox tests pass.
