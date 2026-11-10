@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, CheckCircle2, ChevronDown, CircleHelp, Clock3, CreditCard, Menu, ShieldCheck, Smartphone, Wifi, Zap } from "lucide-react";
+import { Activity, ArrowUpRight, CheckCircle2, ChevronDown, CreditCard, Gauge, Menu, ShieldCheck, Smartphone, TrendingUp, Wallet, Wifi, Zap } from "lucide-react";
 
 type Plan = { variation_code: string; name: string; variation_amount: string; fixedPrice: string };
 const networks = [
@@ -22,6 +22,11 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [usagePeriod, setUsagePeriod] = useState<"week" | "month">("week");
+  const usageBars = usagePeriod === "week"
+    ? [{ day: "M", value: 42 }, { day: "T", value: 66 }, { day: "W", value: 54 }, { day: "T", value: 82 }, { day: "F", value: 61 }, { day: "S", value: 94 }, { day: "S", value: 48 }]
+    : [{ day: "W1", value: 48 }, { day: "W2", value: 72 }, { day: "W3", value: 56 }, { day: "W4", value: 88 }];
+
   const selected = networks.find(n => n.id === network)!;
   const chosen = plans.find(p => p.variation_code === plan);
   const basePrice = kind === "airtime" ? Number(amount) : Number(chosen?.variation_amount || 0);
@@ -58,7 +63,36 @@ export default function Home() {
         <article><span className="metric-icon">♧</span><small>PAYMENTS</small><strong>Secure</strong><em>Paystack checkout</em></article>
       </div>
     </section>
-\n    <section className="purchase-wrap" id="services"><div className="purchase-heading"><div><div className="eyebrow">QUICK PURCHASE</div><h2>What do you need today?</h2><p>Choose a service and we’ll handle the rest.</p></div><div className="trust-mini"><ShieldCheck/> Safe & secure</div></div>
+\n
+    <section className="dashboard-preview" aria-label="Interactive account dashboard preview">
+      <div className="dashboard-heading"><div><div className="eyebrow">YOUR DIGITAL LIFE, AT A GLANCE</div><h2>A smarter way to stay in control.</h2><p>Explore the Sub dashboard experience before you top up.</p></div><span className="preview-tag"><span/> INTERACTIVE DEMO</span></div>
+      <div className="dashboard-grid">
+        <article className="dash-balance">
+          <div className="dash-card-top"><span><Wallet size={16}/> Wallet overview</span><span className="demo-label">SAMPLE DATA</span></div>
+          <small>AVAILABLE BALANCE</small><strong className="dash-amount">₦12,450<span>.00</span></strong>
+          <div className="balance-change"><TrendingUp size={14}/> Example balance card</div>
+          <div className="balance-actions"><button type="button" onClick={() => { setKind("data"); document.getElementById("services")?.scrollIntoView({behavior:"smooth"}); }}> <Wifi size={15}/> Buy data</button><button type="button" onClick={() => { setKind("airtime"); document.getElementById("services")?.scrollIntoView({behavior:"smooth"}); }}><Smartphone size={15}/> Airtime</button></div>
+          <div className="balance-decoration"/>
+        </article>
+        <article className="dash-usage">
+          <div className="dash-card-top"><span><Activity size={16}/> Data usage</span><div className="period-switch"><button type="button" className={usagePeriod === "week" ? "active" : ""} onClick={() => setUsagePeriod("week")}>7 days</button><button type="button" className={usagePeriod === "month" ? "active" : ""} onClick={() => setUsagePeriod("month")}>30 days</button></div></div>
+          <div className="usage-total"><strong>{usagePeriod === "week" ? "6.4" : "24.8"}<small> GB</small></strong><span>Example data consumed</span></div>
+          <div className="usage-chart" role="img" aria-label={usagePeriod === "week" ? "Sample data usage over seven days" : "Sample data usage over four weeks"}>{usageBars.map((bar, index) => <div className="usage-column" key={bar.day + index}><div className="usage-track"><i style={{height: bar.value + "%"}}/></div><small>{bar.day}</small></div>)}</div>
+          <div className="usage-foot"><span><i/> Mobile data</span><b>{usagePeriod === "week" ? "Last 7 days" : "Last 30 days"}</b></div>
+        </article>
+        <article className="dash-plan">
+          <div className="dash-card-top"><span><Gauge size={16}/> Plan snapshot</span><span className="demo-label">EXAMPLE</span></div>
+          <div className="plan-ring"><div><strong>64%</strong><small>USED</small></div></div>
+          <div className="plan-info"><strong>6.4 GB <span>of 10 GB</span></strong><small>Illustrative bundle balance</small></div>
+          <div className="plan-progress"><i/></div>
+          <div className="plan-meta"><span>Remaining</span><b>3.6 GB</b></div>
+          <button type="button" className="plan-cta" onClick={() => { setKind("data"); document.getElementById("services")?.scrollIntoView({behavior:"smooth"}); }}>Get a data bundle <ArrowUpRight size={15}/></button>
+        </article>
+      </div>
+      <p className="dashboard-disclaimer">Dashboard preview only — balances and usage shown here are sample figures, not connected to a personal account.</p>
+    </section>
+
+    <section className="purchase-wrap" id="services"><div className="purchase-heading"><div><div className="eyebrow">QUICK PURCHASE</div><h2>What do you need today?</h2><p>Choose a service and we’ll handle the rest.</p></div><div className="trust-mini"><ShieldCheck/> Safe & secure</div></div>
     <div className="purchase-card"><div className="service-tabs"><button className={kind === "data" ? "tab active" : "tab"} onClick={() => setKind("data")}><Wifi/> Buy data</button><button className={kind === "airtime" ? "tab active" : "tab"} onClick={() => setKind("airtime")}><Smartphone/> Airtime</button></div>
       <form onSubmit={checkout}><div className="form-grid"><div className="field full"><label>SELECT NETWORK</label><div className="network-grid">{networks.map(n => <button type="button" key={n.id} className={network === n.id ? "network selected" : "network"} onClick={() => setNetwork(n.id)}><span className="network-logo" style={{background:n.color,color:n.text}}>{n.name === "9mobile" ? "9" : n.name.slice(0,1)}</span><span>{n.name}</span>{network === n.id && <CheckCircle2 className="network-check"/>}</button>)}</div></div>
       <div className="field"><label htmlFor="phone">PHONE NUMBER</label><div className="input-wrap"><Smartphone/><input id="phone" inputMode="numeric" placeholder="08012345678" maxLength={11} value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g,""))} required/></div><small>Enter the number to receive your {kind}.</small></div>
