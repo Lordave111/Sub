@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
 import { Activity, ArrowUpRight, CheckCircle2, ChevronDown, CreditCard, Gauge, Menu, ShieldCheck, Smartphone, TrendingUp, Wallet, Wifi, Zap } from "lucide-react";
 
 type Plan = { variation_code: string; name: string; variation_amount: string; fixedPrice: string };
@@ -22,6 +23,19 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [supabaseClient] = useState(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    return url && key ? createClient(url, key) : null;
+  });
+  const [session, setSession] = useState<any>(null);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authNotice, setAuthNotice] = useState("");
+  const [account, setAccount] = useState<any>(null);
+  const [accountBusy, setAccountBusy] = useState(false);
   const [usagePeriod, setUsagePeriod] = useState<"week" | "month">("week");
   const usageBars = usagePeriod === "week"
     ? [{ day: "M", value: 42 }, { day: "T", value: 66 }, { day: "W", value: 54 }, { day: "T", value: 82 }, { day: "F", value: 61 }, { day: "S", value: 94 }, { day: "S", value: 48 }]
@@ -31,6 +45,42 @@ export default function Home() {
   const chosen = plans.find(p => p.variation_code === plan);
   const basePrice = kind === "airtime" ? Number(amount) : Number(chosen?.variation_amount || 0);
   const total = useMemo(() => basePrice ? Math.ceil(basePrice + markup) : 0, [basePrice, markup]);
+  useEffect(() => {
+    if (!supabaseClient) return;
+    supabaseClient.auth.getSession().then(({ data }) => setSession(data.session));
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      setAccount(null);
+    });
+    return () => subscription.unsubscribe();
+  }, [supabaseClient]);
+  useEffect(() => {
+    if (!session?.access_token) { setAccount(null); return; }
+    setAccountBusy(true);
+    fetch("/api/account", { headers: { Authorization: "Bearer " + session.access_token } })
+      .then(async response => { const data = await response.json(); if (!response.ok) throw new Error(data.error || "Could not load account."); setAccount(data); })
+      .catch(error => setAuthNotice(error instanceof Error ? error.message : "Could not load account."))
+      .finally(() => setAccountBusy(false));
+  }, [session]);
+  async function handleAuth(e: React.FormEvent) {
+    e.preventDefault(); setAuthNotice("");
+    if (!supabaseClient) { setAuthNotice("Add the Supabase URL and public anon key to Vercel environment variables first."); return; }
+    setAuthBusy(true);
+    try {
+      const result = authMode === "signup"
+        ? await supabaseClient.auth.signUp({ email: authEmail, password: authPassword })
+        : await supabaseClient.auth.signInWithPassword({ email: authEmail, password: authPassword });
+      if (result.error) throw result.error;
+      if (authMode === "signup" && !result.data.session) setAuthNotice("Account created. Check your email to confirm it, then sign in.");
+      else setAuthNotice(authMode === "signup" ? "Your account is ready." : "Welcome back.");
+    } catch (error) { setAuthNotice(error instanceof Error ? error.message : "Authentication failed."); }
+    finally { setAuthBusy(false); }
+  }
+  async function signOut() {
+    await supabaseClient?.auth.signOut();
+    setAccount(null);
+    setAuthNotice("You have signed out.");
+  }
   useEffect(() => {
     if (kind !== "data") return;
     setPlans([]); setPlan("");
@@ -42,9 +92,10 @@ export default function Home() {
     if (!email.includes("@")) return setNotice("Enter a valid email address for your receipt.");
     if (kind === "data" && !chosen) return setNotice("Choose a data plan first.");
     if (kind === "airtime" && (basePrice < 50 || basePrice > 50000)) return setNotice("Airtime must be between ₦50 and ₦50,000.");
+    if (!session?.access_token) return setNotice("Please sign in or create an account before purchasing.");
     setLoading(true);
     try {
-      const res = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind, network, phone: phone.replace(/\s/g, ""), email, amount: basePrice, variationCode: chosen?.variation_code, planName: chosen?.name, markup }) });
+      const res = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token }, body: JSON.stringify({ kind, network, phone: phone.replace(/\s/g, ""), email, amount: basePrice, variationCode: chosen?.variation_code, planName: chosen?.name, markup }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not start payment.");
       window.location.href = data.authorizationUrl;
@@ -64,32 +115,31 @@ export default function Home() {
       </div>
     </section>
 \n
-    <section className="dashboard-preview" aria-label="Interactive account dashboard preview">
-      <div className="dashboard-heading"><div><div className="eyebrow">YOUR DIGITAL LIFE, AT A GLANCE</div><h2>A smarter way to stay in control.</h2><p>Explore the Sub dashboard experience before you top up.</p></div><span className="preview-tag"><span/> INTERACTIVE DEMO</span></div>
-      <div className="dashboard-grid">
-        <article className="dash-balance">
-          <div className="dash-card-top"><span><Wallet size={16}/> Wallet overview</span><span className="demo-label">SAMPLE DATA</span></div>
-          <small>AVAILABLE BALANCE</small><strong className="dash-amount">₦12,450<span>.00</span></strong>
-          <div className="balance-change"><TrendingUp size={14}/> Example balance card</div>
-          <div className="balance-actions"><button type="button" onClick={() => { setKind("data"); document.getElementById("services")?.scrollIntoView({behavior:"smooth"}); }}> <Wifi size={15}/> Buy data</button><button type="button" onClick={() => { setKind("airtime"); document.getElementById("services")?.scrollIntoView({behavior:"smooth"}); }}><Smartphone size={15}/> Airtime</button></div>
-          <div className="balance-decoration"/>
-        </article>
-        <article className="dash-usage">
-          <div className="dash-card-top"><span><Activity size={16}/> Data usage</span><div className="period-switch"><button type="button" className={usagePeriod === "week" ? "active" : ""} onClick={() => setUsagePeriod("week")}>7 days</button><button type="button" className={usagePeriod === "month" ? "active" : ""} onClick={() => setUsagePeriod("month")}>30 days</button></div></div>
-          <div className="usage-total"><strong>{usagePeriod === "week" ? "6.4" : "24.8"}<small> GB</small></strong><span>Example data consumed</span></div>
-          <div className="usage-chart" role="img" aria-label={usagePeriod === "week" ? "Sample data usage over seven days" : "Sample data usage over four weeks"}>{usageBars.map((bar, index) => <div className="usage-column" key={bar.day + index}><div className="usage-track"><i style={{height: bar.value + "%"}}/></div><small>{bar.day}</small></div>)}</div>
-          <div className="usage-foot"><span><i/> Mobile data</span><b>{usagePeriod === "week" ? "Last 7 days" : "Last 30 days"}</b></div>
-        </article>
-        <article className="dash-plan">
-          <div className="dash-card-top"><span><Gauge size={16}/> Plan snapshot</span><span className="demo-label">EXAMPLE</span></div>
-          <div className="plan-ring"><div><strong>64%</strong><small>USED</small></div></div>
-          <div className="plan-info"><strong>6.4 GB <span>of 10 GB</span></strong><small>Illustrative bundle balance</small></div>
-          <div className="plan-progress"><i/></div>
-          <div className="plan-meta"><span>Remaining</span><b>3.6 GB</b></div>
-          <button type="button" className="plan-cta" onClick={() => { setKind("data"); document.getElementById("services")?.scrollIntoView({behavior:"smooth"}); }}>Get a data bundle <ArrowUpRight size={15}/></button>
-        </article>
-      </div>
-      <p className="dashboard-disclaimer">Dashboard preview only — balances and usage shown here are sample figures, not connected to a personal account.</p>
+    <section className="dashboard-preview" aria-label="Customer account dashboard">
+      {!session ? <div className="account-auth-card">
+        <div className="auth-copy"><div className="eyebrow">YOUR SUB ACCOUNT</div><h2>Everything connected, in one place.</h2><p>Create an account to keep your purchases together and view your real order history whenever you return.</p><div className="auth-benefit"><CheckCircle2/> Track airtime and data orders</div><div className="auth-benefit"><CheckCircle2/> See delivery and payment status</div><div className="auth-benefit"><CheckCircle2/> Keep your account private</div></div>
+        <form className="auth-form" onSubmit={handleAuth}>
+          <div className="auth-toggle"><button type="button" className={authMode === "signup" ? "active" : ""} onClick={() => {setAuthMode("signup");setAuthNotice("");}}>Create account</button><button type="button" className={authMode === "login" ? "active" : ""} onClick={() => {setAuthMode("login");setAuthNotice("");}}>Sign in</button></div>
+          <label htmlFor="account-email">EMAIL ADDRESS</label><input id="account-email" type="email" autoComplete="email" placeholder="you@example.com" value={authEmail} onChange={e => setAuthEmail(e.target.value)} required/>
+          <label htmlFor="account-password">PASSWORD</label><input id="account-password" type="password" autoComplete={authMode === "signup" ? "new-password" : "current-password"} minLength={6} placeholder="At least 6 characters" value={authPassword} onChange={e => setAuthPassword(e.target.value)} required/>
+          {authNotice && <p className="auth-notice">{authNotice}</p>}
+          <button className="auth-submit" disabled={authBusy || !supabaseClient}>{authBusy ? "Please wait…" : authMode === "signup" ? "Create my account" : "Sign in securely"} <ArrowUpRight size={16}/></button>
+          {!supabaseClient && <small className="auth-config-hint">Account sign-in will activate after the Supabase public key is added in Vercel.</small>}
+        </form>
+      </div> : <div className="real-account">
+        <div className="account-title"><div><div className="eyebrow">CUSTOMER DASHBOARD</div><h2>Welcome back.</h2><p>{session.user?.email}</p></div><button type="button" onClick={signOut} className="signout-btn">Sign out</button></div>
+        {accountBusy ? <div className="account-loading">Loading your account activity…</div> : account ? <>
+          <div className="account-stats">
+            <article className="account-wallet"><small>WALLET BALANCE</small><strong>{money(Number(account.walletBalance || 0))}</strong><span>Available wallet funds</span></article>
+            <article><small>TOTAL PURCHASES</small><strong>{account.stats.totalOrders}</strong><span>Orders on this account</span></article>
+            <article><small>DELIVERED</small><strong>{account.stats.delivered}</strong><span>Successfully completed</span></article>
+            <article><small>IN PROGRESS</small><strong>{account.stats.pending}</strong><span>Awaiting confirmation</span></article>
+          </div>
+          <div className="account-orders-head"><div><h3>Recent purchases</h3><p>Your order records, loaded from your account.</p></div><button type="button" onClick={() => {setAccountBusy(true);fetch("/api/account",{headers:{Authorization:"Bearer "+session.access_token}}).then(r=>r.json()).then(setAccount).finally(()=>setAccountBusy(false));}}>Refresh</button></div>
+          {account.orders.length ? <div className="orders-list">{account.orders.slice(0,8).map((order:any) => <article key={order.reference}><span className="order-kind">{order.kind === "data" ? <Wifi size={16}/> : <Smartphone size={16}/>}</span><div className="order-description"><strong>{order.network.toUpperCase()} {order.kind === "data" ? "Data" : "Airtime"}</strong><small>{order.plan_name || order.phone} · {new Date(order.created_at).toLocaleDateString("en-NG")}</small></div><b>{money(Number(order.total))}</b><em className={"order-status " + order.status}>{order.status.replaceAll("_"," ")}</em></article>)}</div> : <div className="empty-orders">No purchases yet. Your completed and pending orders will appear here.</div>}
+          <div className="usage-unavailable"><Gauge size={18}/><div><strong>Live network data balance</strong><span>Your order history is connected. Remaining MB/GB requires a supported network usage API; it is not available from the current VTPass setup.</span></div></div>
+        </> : <div className="account-loading">Your account activity could not be loaded. Please refresh.</div>}
+      </div>}
     </section>
 
     <section className="purchase-wrap" id="services"><div className="purchase-heading"><div><div className="eyebrow">QUICK PURCHASE</div><h2>What do you need today?</h2><p>Choose a service and we’ll handle the rest.</p></div><div className="trust-mini"><ShieldCheck/> Safe & secure</div></div>
