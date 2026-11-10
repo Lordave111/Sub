@@ -226,3 +226,64 @@ footer{border-color:#e8e2f7;background:#fff}
 .result-icon.success,.spin{color:#6845e8}
 .result-btn{background:linear-gradient(100deg,#6845e8,#238fc8)}
 @media(max-width:700px){.nav{background:#fff}.dashboard-grid>article{box-shadow:0 8px 25px #3922760c}}
+
+
+/* Midnight fintech theme */
+:root{color-scheme:dark;--ink:#f4f2ff;--muted:#aaa6c5;--line:#302b4a;--bg:#0b0a14}
+html{background:#0b0a14}
+body{background:radial-gradient(ellipse at 12% 0%,#241849 0,transparent 36%),radial-gradient(ellipse at 90% 18%,#102d3a 0,transparent 30%),#0b0a14;color:#f4f2ff}
+.topbar{background:#100e1def;border-bottom-color:#302747;color:#f4f2ff}
+.brand,.nav a,.header-right,.secure{color:#f4f2ff}
+.nav a:hover,footer a:hover{color:#a995ff}
+.hero h1,.purchase-heading h2,.benefits h2,.more-services-heading h2{color:#f7f5ff}
+.hero p,.hero-points span,.purchase-heading p,.more-services-heading p,.benefit-grid p{color:#aaa6c5}
+.eyebrow{color:#b49aff}
+.orbit{border-color:#4c3c78}.orbit-two{border-color:#23596a}
+.float-chip{background:#171426;border-color:#3c315d;color:#eeeaff;box-shadow:0 12px 34px #0008}
+.purchase-card,.dashboard-grid>article,.benefit-grid article,.more-services-grid article,.result-card,.auth-form,.real-account,.account-auth-card{background:#151322;border-color:#302945;color:#f4f2ff;box-shadow:0 18px 50px #0005}
+.service-tabs{border-bottom-color:#302945}
+.tab{color:#aaa6c5}.tab.active{color:#b49aff;border-color:#9a7cff}
+.network{background:#1c192b;border-color:#39314f;color:#f0edff}
+.network.selected{background:#292044;border-color:#9a7cff}
+.field label,.plan-picker-heading label,.auth-form label{color:#c6c0df}
+.input-wrap,.select-wrap,.auth-form input{background:#0e0c18;border-color:#39314f;color:#f7f5ff}
+.input-wrap input,.auth-form input{color:#f7f5ff}
+.input-wrap input::placeholder,.auth-form input::placeholder{color:#77718f}
+.input-wrap:focus-within,.select-wrap:focus-within,.auth-form input:focus{border-color:#9a7cff;box-shadow:0 0 0 3px #9a7cff22}
+.price-summary,.live-overview-head{background:linear-gradient(120deg,#211a36,#142733);border-color:#39304f;color:#d9d3f2}
+.price-summary span,.price-summary strong{color:#c9c3df}
+.total-row{border-top-color:#39304f}.total-row strong{color:#c0aaff}
+.payment-note,.field small{color:#9992b2}
+.live-overview{background:#151322;border:1px solid #302945;border-radius:18px}
+.live-overview-head{border-radius:17px 17px 0 0}
+.live-metrics{border-color:#302945}.live-metrics article{color:#f2efff}.live-metrics small,.live-metrics em{color:#9e97b9}.live-metrics strong{color:#f7f5ff}
+.dashboard-preview{color:#f4f2ff}
+.dash-card-top>span:first-child,.account-title h2,.account-orders-head h3{color:#f3efff}
+.dashboard-grid>article{color:#f4f2ff}
+.account-stats article{background:#1d192d;border-color:#39314f;color:#f4f2ff}
+.account-stats small,.account-stats span,.account-orders-head p{color:#a7a0bf}
+.orders-list{border-color:#39314f}.orders-list article{border-color:#39314f}.order-description strong,.orders-list article>b{color:#eeeaff}.order-description small{color:#9b94b2}
+.empty-orders,.account-loading,.plans-empty{background:#1c192b;border-color:#3c3454;color:#aaa3c1}
+.usage-unavailable{background:#1c192b;border-color:#39314f;color:#b5adcf}.usage-unavailable strong{color:#e9e4ff}.usage-unavailable span{color:#a7a0bf}
+.advanced-plan{background:linear-gradient(145deg,#1d1a2d,#151322);border-color:#39314f;color:#f4f2ff;box-shadow:0 6px 20px #0003}
+.advanced-plan:hover{border-color:#9a7cff;box-shadow:0 12px 28px #9a7cff20}
+.advanced-plan.selected{background:linear-gradient(145deg,#292044,#152b37);border-color:#a38aff;box-shadow:0 0 0 3px #9a7cff22,0 12px 28px #0005}
+.plan-size{color:#f6f2ff}.plan-name{color:#aaa3c1}.plan-validity{background:#29243b;color:#c3b8e7}
+.plan-card-bottom{border-color:#39314f}.plan-card-bottom small,.plan-base-price{color:#9992b2}.plan-card-bottom b{color:#bca8ff}
+.plan-picker-heading>span{background:#292044;color:#c4b2ff}
+.plan-category-tabs{display:flex;gap:7px;overflow-x:auto;padding:3px 1px 11px;scrollbar-width:none}
+.plan-category-tabs::-webkit-scrollbar{display:none}
+.plan-category-tabs button{flex:0 0 auto;display:flex;align-items:center;gap:7px;border:1px solid #39314f;border-radius:999px;padding:9px 12px;background:#1b182a;color:#b8b1d0;font-size:10px;font-weight:800;transition:.18s}
+.plan-category-tabs button small{display:grid;place-items:center;min-width:18px;height:18px;padding:0 4px;border-radius:20px;background:#302944;color:#c9baff;font-size:8px}
+.plan-category-tabs button.active{background:linear-gradient(100deg,#6845e8,#237e9d);border-color:#9476ff;color:#fff;box-shadow:0 5px 18px #6845e833}
+.plan-category-tabs button.active small{background:#ffffff2b;color:#fff}
+.benefit-grid article h3,.more-services-grid b{color:#f1edff}
+.benefit-icon,.more-services-grid article>i{background:#292044;color:#bca8ff}
+footer{background:#100e1d;border-color:#302945;color:#aaa3c1}
+footer .brand{color:#f4f2ff}
+.result-page{background:radial-gradient(circle at 50% 10%,#281d4c,transparent 45%),#0b0a14}
+.result-card{color:#f4f2ff}
+.result-card h1,.result-card h2{color:#f5f1ff}
+.result-card p,.result-card small{color:#aaa3c1}
+.nav{background:#100e1d}
+@media(max-width:700px){.nav{background:#151322;border-color:#39314f}.purchase-card{border-radius:16px}.plan-category-tabs{margin-right:-2px}}
