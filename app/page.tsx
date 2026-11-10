@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { Activity, ArrowUpRight, CheckCircle2, ChevronDown, CreditCard, Gauge, Menu, ShieldCheck, Smartphone, TrendingUp, Wallet, Wifi, Zap } from "lucide-react";
+import { Activity, ArrowUpRight, CheckCircle2, CreditCard, Gauge, Menu, ShieldCheck, Smartphone, TrendingUp, Wallet, Wifi, Zap } from "lucide-react";
 
 type Plan = { variation_code: string; name: string; variation_amount: string; fixedPrice: string };
 const networks = [
@@ -11,6 +11,8 @@ const networks = [
   { id: "9mobile", name: "9mobile", color: "#087b48", text: "#fff", service: "9mobile-data", airtime: "etisalat" },
 ];
 const money = (n: number) => "₦" + n.toLocaleString("en-NG");
+const planSize = (name: string) => name.match(/\d+(?:\.\d+)?\s?(?:MB|GB|TB)/i)?.[0] || "DATA BUNDLE";
+const planValidity = (name: string) => name.match(/\d+\s?(?:hours?|days?|weeks?|months?)/i)?.[0] || "Provider validity";
 export default function Home() {
   const [kind, setKind] = useState<"data" | "airtime">("data");
   const [network, setNetwork] = useState("mtn");
@@ -25,7 +27,7 @@ export default function Home() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [supabaseClient] = useState(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     return url && key ? createClient(url, key) : null;
   });
   const [session, setSession] = useState<any>(null);
@@ -65,7 +67,7 @@ export default function Home() {
   }, [session]);
   async function handleAuth(e: React.FormEvent) {
     e.preventDefault(); setAuthNotice("");
-    if (!supabaseClient) { setAuthNotice("Add the Supabase URL and public anon key to Vercel environment variables first."); return; }
+    if (!supabaseClient) { setAuthNotice("Supabase is not connected. Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in Vercel."); return; }
     setAuthBusy(true);
     try {
       const result = authMode === "signup"
@@ -148,7 +150,7 @@ export default function Home() {
     <div className="purchase-card"><div className="service-tabs"><button className={kind === "data" ? "tab active" : "tab"} onClick={() => setKind("data")}><Wifi/> Buy data</button><button className={kind === "airtime" ? "tab active" : "tab"} onClick={() => setKind("airtime")}><Smartphone/> Airtime</button></div>
       <form onSubmit={checkout}><div className="form-grid"><div className="field full"><label>SELECT NETWORK</label><div className="network-grid">{networks.map(n => <button type="button" key={n.id} className={network === n.id ? "network selected" : "network"} onClick={() => setNetwork(n.id)}><span className="network-logo" style={{background:n.color,color:n.text}}>{n.name === "9mobile" ? "9" : n.name.slice(0,1)}</span><span>{n.name}</span>{network === n.id && <CheckCircle2 className="network-check"/>}</button>)}</div></div>
       <div className="field"><label htmlFor="phone">PHONE NUMBER</label><div className="input-wrap"><Smartphone/><input id="phone" inputMode="numeric" placeholder="08012345678" maxLength={11} value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g,""))} required/></div><small>Enter the number to receive your {kind}.</small></div>
-      {kind === "data" ? <div className="field"><label htmlFor="plan">CHOOSE DATA PLAN</label><div className="select-wrap"><select id="plan" value={plan} onChange={e => setPlan(e.target.value)} required><option value="">{plans.length ? "Choose a bundle" : "Loading available plans…"}</option>{plans.map(p => <option key={p.variation_code} value={p.variation_code}>{p.name} — {money(Number(p.variation_amount))}</option>)}</select><ChevronDown/></div><small>Plans and base prices are loaded from the provider.</small></div> : <div className="field"><label htmlFor="amount">AIRTIME AMOUNT</label><div className="input-wrap"><span className="naira">₦</span><input id="amount" type="number" min="50" max="50000" value={amount} onChange={e => setAmount(e.target.value)} required/></div><small>Minimum ₦50 · Maximum ₦50,000</small></div>}
+      {kind === "data" ? <div className="field full"><div className="plan-picker-heading"><label>CHOOSE YOUR DATA PLAN</label><span>{plans.length ? plans.length + " live bundles" : "Loading live bundles"}</span></div><div className="advanced-plan-grid">{plans.map(p => { const selectedPlan = plan === p.variation_code; const rawPrice = Number(p.variation_amount); const customerPrice = Math.round(rawPrice * (1 + commissionPercent / 100) * 100) / 100; return <button type="button" key={p.variation_code} className={"advanced-plan " + (selectedPlan ? "selected" : "")} onClick={() => setPlan(p.variation_code)} aria-pressed={selectedPlan}><span className="plan-card-top"><span className="plan-network-mark" style={{background:selected.color,color:selected.text}}>{selected.name === "9mobile" ? "9" : selected.name.slice(0,1)}</span><span className="plan-validity">{planValidity(p.name)}</span>{selectedPlan && <CheckCircle2 size={17}/>}</span><strong className="plan-size">{planSize(p.name)}</strong><span className="plan-name">{p.name}</span><span className="plan-card-bottom"><span><small>YOU PAY</small><b>{money(customerPrice)}</b></span><span className="plan-base-price">{money(rawPrice)} base</span></span></button>; })}{!plans.length && <div className="plans-empty">Loading provider bundles. If this takes too long, check your VTpass API settings.</div>}</div><small>Live bundles from the provider. Prices include your {commissionPercent}% service fee.</small></div> : <div className="field"><label htmlFor="amount">AIRTIME AMOUNT</label><div className="input-wrap"><span className="naira">₦</span><input id="amount" type="number" min="50" max="50000" value={amount} onChange={e => setAmount(e.target.value)} required/></div><small>Minimum ₦50 · Maximum ₦50,000</small></div>}
       <div className="field full"><label htmlFor="email">EMAIL ADDRESS</label><div className="input-wrap"><span className="mail-icon">✉</span><input id="email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required/></div><small>Your payment receipt and order updates will be sent here.</small></div></div>
       <div className="price-summary"><div><span>Service amount</span><strong>{basePrice ? money(basePrice) : "—"}</strong></div><div><span>Service fee ({commissionPercent}%)</span><strong>{basePrice ? money(serviceFee) : "—"}</strong></div><div className="total-row"><span>Total to pay</span><strong>{total ? money(total) : "—"}</strong></div></div>
       {notice && <div className="notice">{notice}</div>}<button className="pay-btn" type="submit" disabled={loading || (kind === "data" && !plans.length)}>{loading ? "Preparing secure payment…" : <>Continue to payment <ArrowUpRight size={18}/></>}</button><div className="payment-note"><ShieldCheck size={15}/> Payments are processed securely by Paystack</div></form>
