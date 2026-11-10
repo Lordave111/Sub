@@ -57,6 +57,7 @@ export default function Home() {
   const [authNotice, setAuthNotice] = useState("");
   const [account, setAccount] = useState<any>(null);
   const [accountBusy, setAccountBusy] = useState(false);
+  const [signOutBusy, setSignOutBusy] = useState(false);
   const [usagePeriod, setUsagePeriod] = useState<"week" | "month">("week");
   const usageBars = usagePeriod === "week"
     ? [{ day: "M", value: 42 }, { day: "T", value: 66 }, { day: "W", value: 54 }, { day: "T", value: 82 }, { day: "F", value: 61 }, { day: "S", value: 94 }, { day: "S", value: 48 }]
@@ -130,9 +131,24 @@ export default function Home() {
     setAuthBusy(false);
   }
   async function signOut() {
-    await supabaseClient?.auth.signOut();
-    setAccount(null);
-    setAuthNotice("You have signed out.");
+    if (!supabaseClient || signOutBusy) return;
+    setSignOutBusy(true);
+    setAuthNotice("");
+    try {
+      const { error } = await supabaseClient.auth.signOut({ scope: "local" });
+      if (error) throw error;
+      setAccount(null);
+      setSession(null);
+      setAuthEmail("");
+      setAuthPassword("");
+      setAuthMode("login");
+      setAuthNotice("You have signed out successfully.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (error) {
+      setAuthNotice(error instanceof Error ? error.message : "Could not sign out. Please try again.");
+    } finally {
+      setSignOutBusy(false);
+    }
   }
   useEffect(() => {
     if (kind !== "data") return;
@@ -184,7 +200,7 @@ export default function Home() {
           {!supabaseClient && <small className="auth-config-hint">Add the Supabase URL and public publishable key in Vercel to activate account access.</small>}
         </form>
       </div> : <div className="real-account">
-        <div className="account-title"><div><div className="eyebrow">CUSTOMER DASHBOARD</div><h2>Welcome back.</h2><p>{session.user?.email}</p></div><button type="button" onClick={signOut} className="signout-btn">Sign out</button></div>
+        <div className="account-title"><div><div className="eyebrow">CUSTOMER DASHBOARD</div><h2>Welcome back.</h2><p>{session.user?.email}</p></div><button type="button" onClick={signOut} className="signout-btn" disabled={signOutBusy || !supabaseClient} aria-live="polite">{signOutBusy ? <><span className="signout-spinner" /> Signing out…</> : "Sign out"}</button></div>
         {accountBusy ? <div className="account-loading">Loading your account activity…</div> : account ? <>
           <div className="account-stats">
             <article className="account-wallet"><small>WALLET LEDGER</small><strong>{money(Number(account.walletBalance || 0))}</strong><span>Wallet funding is not enabled yet</span></article>
