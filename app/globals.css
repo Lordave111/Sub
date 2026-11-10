@@ -381,3 +381,64 @@ footer .brand{color:#f4f2ff}
 .reset-password-field button{position:absolute;right:7px;top:7px;width:32px;height:32px;border:0;background:transparent;color:#aaa2c3}
 .reset-form .auth-submit{width:100%}
 .reset-back{display:block;text-align:center;margin-top:18px;color:#b6a5ff;font-size:10px;font-weight:800;text-decoration:none}
+
+/* Customer dashboard: mobile-first dark layout and reliable sign-out affordance */
+.real-account{min-width:0;overflow:hidden;background:radial-gradient(circle at 0 0,#30204b 0,transparent 38%),linear-gradient(145deg,#191528,#11101d);border:1px solid #3b3157;border-radius:18px;padding:clamp(16px,3vw,28px);color:#f5f1ff;box-shadow:0 18px 55px #0004}
+.real-account .account-title{display:flex;align-items:center;justify-content:space-between;gap:14px;min-width:0}
+.real-account .account-title>div{min-width:0;flex:1}
+.real-account .account-title .eyebrow{color:#ad96ff}
+.real-account .account-title h2{color:#f7f3ff;font-size:clamp(23px,3vw,30px)}
+.real-account .account-title p{color:#aaa3c1;overflow-wrap:anywhere;word-break:break-word}
+.real-account .signout-btn{flex:0 0 auto;min-height:42px;min-width:96px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #6a527f;background:#2a203a;color:#f1eaff;border-radius:10px;padding:10px 14px;font-size:10px;font-weight:850;cursor:pointer;touch-action:manipulation;transition:background .18s,border-color .18s,transform .18s}
+.real-account .signout-btn:hover{background:#3a2a50;border-color:#a78bfa}
+.real-account .signout-btn:active{transform:scale(.98)}
+.real-account .signout-btn:disabled{opacity:.65;cursor:wait}
+.signout-spinner{width:12px;height:12px;border:2px solid #c8b9ff55;border-top-color:#d8ccff;border-radius:50%;animation:sub-signout-spin .7s linear infinite}
+@keyframes sub-signout-spin{to{transform:rotate(360deg)}}
+.real-account .account-stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.real-account .account-stats article{min-width:0;background:#211d30;border-color:#3b3451}
+.real-account .account-stats article:not(.account-wallet) small{color:#aaa2c0}
+.real-account .account-stats article:not(.account-wallet) strong{color:#f5f1ff}
+.real-account .account-stats article:not(.account-wallet) span{color:#aaa2c0}
+.real-account .account-orders-head{gap:12px}
+.real-account .account-orders-head h3{color:#f4efff}
+.real-account .account-orders-head p{color:#a39bb9}
+.real-account .account-orders-head>button{flex:0 0 auto;border-color:#55466e;background:#29223b;color:#ded3ff;min-height:38px}
+.real-account .orders-list{border-color:#3a334d}
+.real-account .orders-list article{gap:10px;border-color:#373047;flex-wrap:nowrap}
+.real-account .order-description strong,.real-account .orders-list article>b{color:#f2edff}
+.real-account .order-description small{color:#a59dbb}
+.real-account .order-kind{background:#302747;color:#bca5ff}
+.real-account .empty-orders,.real-account .account-loading{background:#211d30;color:#b5accb}
+.real-account .usage-unavailable{background:#211d30;border-color:#403650;color:#c2b7dd}
+.real-account .usage-unavailable strong{color:#eee7ff}
+.real-account .usage-unavailable span{color:#aaa2bd}
+@media(max-width:700px){
+ .real-account{padding:15px 12px;border-radius:15px}
+ .real-account .account-title{align-items:flex-start;gap:10px;margin-bottom:16px}
+ .real-account .account-title h2{font-size:22px;margin:7px 0 5px}
+ .real-account .account-title p{font-size:10px;line-height:1.5;margin:0}
+ .real-account .signout-btn{min-height:40px;min-width:82px;padding:9px 10px;font-size:9px;border-radius:9px}
+ .real-account .account-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .real-account .account-stats article{padding:11px 9px;gap:5px}
+ .real-account .account-stats strong{font-size:19px;line-height:1.2}
+ .real-account .account-stats small{font-size:7px;letter-spacing:.7px}
+ .real-account .account-stats span{font-size:8px;line-height:1.4}
+ .real-account .account-orders-head{align-items:flex-start;margin:19px 0 10px}
+ .real-account .account-orders-head h3{font-size:13px}
+ .real-account .account-orders-head p{font-size:8px;line-height:1.5}
+ .real-account .orders-list article{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:8px;padding:11px 0}
+ .real-account .order-kind{width:30px;height:30px}
+ .real-account .order-description{min-width:0}
+ .real-account .order-description strong{font-size:9px}
+ .real-account .order-description small{font-size:7px}
+ .real-account .orders-list article>b{font-size:9px;grid-column:3;grid-row:1}
+ .real-account .order-status{grid-column:2 / 4;justify-self:start;font-size:7px;padding:4px 7px}
+ .real-account .usage-unavailable{padding:10px;margin-top:12px}
+ .real-account .usage-unavailable span{font-size:8px;line-height:1.55}
+}
+@media(max-width:360px){
+ .real-account .account-title{flex-wrap:wrap}
+ .real-account .signout-btn{width:100%}
+ .real-account .account-stats strong{font-size:17px}
+}
