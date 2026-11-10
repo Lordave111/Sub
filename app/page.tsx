@@ -19,7 +19,7 @@ export default function Home() {
   const [amount, setAmount] = useState("100");
   const [plans, setPlans] = useState<Plan[]>([]);
   const [plan, setPlan] = useState("");
-  const [markup] = useState(Number(process.env.NEXT_PUBLIC_COMMISSION_NAIRA || "30"));
+  const [commissionPercent] = useState(Number(process.env.NEXT_PUBLIC_COMMISSION_PERCENT || "20"));
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -44,7 +44,8 @@ export default function Home() {
   const selected = networks.find(n => n.id === network)!;
   const chosen = plans.find(p => p.variation_code === plan);
   const basePrice = kind === "airtime" ? Number(amount) : Number(chosen?.variation_amount || 0);
-  const total = useMemo(() => basePrice ? Math.ceil(basePrice + markup) : 0, [basePrice, markup]);
+  const serviceFee = useMemo(() => basePrice ? Math.round(basePrice * commissionPercent) / 100 : 0, [basePrice, commissionPercent]);
+  const total = useMemo(() => basePrice ? Math.round((basePrice + serviceFee) * 100) / 100 : 0, [basePrice, serviceFee]);
   useEffect(() => {
     if (!supabaseClient) return;
     supabaseClient.auth.getSession().then(({ data }) => setSession(data.session));
@@ -96,7 +97,7 @@ export default function Home() {
     if (!session?.access_token) return setNotice("Please sign in or create an account before purchasing.");
     setLoading(true);
     try {
-      const res = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token }, body: JSON.stringify({ kind, network, phone: phone.replace(/\s/g, ""), email, amount: basePrice, variationCode: chosen?.variation_code, planName: chosen?.name, markup }) });
+      const res = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token }, body: JSON.stringify({ kind, network, phone: phone.replace(/\s/g, ""), email, amount: basePrice, variationCode: chosen?.variation_code, planName: chosen?.name, commissionPercent }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not start payment.");
       window.location.href = data.authorizationUrl;
@@ -149,7 +150,7 @@ export default function Home() {
       <div className="field"><label htmlFor="phone">PHONE NUMBER</label><div className="input-wrap"><Smartphone/><input id="phone" inputMode="numeric" placeholder="08012345678" maxLength={11} value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g,""))} required/></div><small>Enter the number to receive your {kind}.</small></div>
       {kind === "data" ? <div className="field"><label htmlFor="plan">CHOOSE DATA PLAN</label><div className="select-wrap"><select id="plan" value={plan} onChange={e => setPlan(e.target.value)} required><option value="">{plans.length ? "Choose a bundle" : "Loading available plans…"}</option>{plans.map(p => <option key={p.variation_code} value={p.variation_code}>{p.name} — {money(Number(p.variation_amount))}</option>)}</select><ChevronDown/></div><small>Plans and base prices are loaded from the provider.</small></div> : <div className="field"><label htmlFor="amount">AIRTIME AMOUNT</label><div className="input-wrap"><span className="naira">₦</span><input id="amount" type="number" min="50" max="50000" value={amount} onChange={e => setAmount(e.target.value)} required/></div><small>Minimum ₦50 · Maximum ₦50,000</small></div>}
       <div className="field full"><label htmlFor="email">EMAIL ADDRESS</label><div className="input-wrap"><span className="mail-icon">✉</span><input id="email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required/></div><small>Your payment receipt and order updates will be sent here.</small></div></div>
-      <div className="price-summary"><div><span>Service amount</span><strong>{basePrice ? money(basePrice) : "—"}</strong></div><div><span>Service fee</span><strong>{basePrice ? money(markup) : "—"}</strong></div><div className="total-row"><span>Total to pay</span><strong>{total ? money(total) : "—"}</strong></div></div>
+      <div className="price-summary"><div><span>Service amount</span><strong>{basePrice ? money(basePrice) : "—"}</strong></div><div><span>Service fee ({commissionPercent}%)</span><strong>{basePrice ? money(serviceFee) : "—"}</strong></div><div className="total-row"><span>Total to pay</span><strong>{total ? money(total) : "—"}</strong></div></div>
       {notice && <div className="notice">{notice}</div>}<button className="pay-btn" type="submit" disabled={loading || (kind === "data" && !plans.length)}>{loading ? "Preparing secure payment…" : <>Continue to payment <ArrowUpRight size={18}/></>}</button><div className="payment-note"><ShieldCheck size={15}/> Payments are processed securely by Paystack</div></form>
     </div></section>
 
