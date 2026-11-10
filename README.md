@@ -9,20 +9,21 @@ A Next.js storefront for MTN, Airtel, Glo and 9mobile airtime/data. Paystack han
 - Supabase Postgres order ledger
 
 ## Setup
-1. Create a Supabase project and run [supabase/schema.sql](supabase/schema.sql) in its SQL Editor.
-2. Copy `.env.example` to `.env.local` and fill in the values.
-3. Create a VTpass sandbox account, enable API access, and add its API key, public key and secret key. VTpass POST requests use `api-key` and `secret-key`; GET requests use `api-key` and `public-key`.
-4. Create a Paystack test integration and add its secret key. Never put secret keys in frontend variables or commit them.
-5. Set `NEXT_PUBLIC_SITE_URL=http://localhost:3000`.
+1. Create a Supabase project and run [supabase/schema.sql](supabase/schema.sql), then [supabase/account-migration.sql](supabase/account-migration.sql), in its SQL Editor.
+2. In Supabase Authentication → Providers, enable Email. Choose whether to require email confirmation.
+3. Copy `.env.example` to `.env.local` and fill in the values, including `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (the Supabase publishable/anon key).
+4. Create a VTpass sandbox account, enable API access, and add its API key, public key and secret key. VTpass POST requests use `api-key` and `secret-key`; GET requests use `api-key` and `public-key`.
+5. Create a Paystack test integration and add its secret key. Never put secret keys in frontend variables or commit them.
+6. Set `NEXT_PUBLIC_SITE_URL=http://localhost:3000`.
 6. Run `npm install` and `npm run dev`.
 
 ## Vercel deployment
-Import this repository into Vercel. Framework preset: Next.js; Root Directory: `./`. Add every variable from `.env.example` in Project Settings → Environment Variables, set `NEXT_PUBLIC_SITE_URL` to your deployed URL, and redeploy.
+Import this repository into Vercel. Framework preset: Next.js; Root Directory: `./`. Add every variable from `.env.example` in Project Settings → Environment Variables, set `NEXT_PUBLIC_SITE_URL` to your deployed URL, and redeploy. In Supabase Authentication → URL Configuration, set the Site URL to your deployed domain and add the Vercel domain to the allowed redirect URLs if you enable email confirmation.
 
 Start with `VTU_SANDBOX=true` and Paystack test keys. Test successful, pending, failed, and duplicate callback scenarios before switching to live credentials and `VTU_SANDBOX=false`.
 
 ## Commission
-Set `COMMISSION_NAIRA` on the server and `NEXT_PUBLIC_COMMISSION_NAIRA` to the same display value (default ₦30). The server calculates the final commission and ignores any fee submitted by the browser. Change both environment values together when adjusting your fee. Also configure support contact details, order lookup, account authentication, and provider callback/requery handling.
+Set `COMMISSION_NAIRA` on the server and `NEXT_PUBLIC_COMMISSION_NAIRA` to the same display value (default ₦30). The server calculates the final commission and ignores any fee submitted by the browser. Change both environment values together when adjusting your fee. The customer dashboard uses Supabase Auth and lists orders created while the customer is signed in. Existing guest orders are not automatically assigned to accounts. Wallet balance reads the wallet transaction ledger; wallet funding is not enabled yet. Live carrier data-balance/usage is not available from the current VTpass integration and is not represented with fabricated figures.
 
 ## Important production notes
 - Do not enable live VTpass or live Paystack keys until sandbox tests pass.
