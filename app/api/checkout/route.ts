@@ -26,8 +26,9 @@ export async function POST(req: NextRequest) {
       verifiedPlanName = String(chosen.name || "Data bundle");
       if (!Number.isFinite(baseAmount) || baseAmount <= 0) throw new Error("Provider returned an invalid plan price.");
     }
-    const commission = Number(process.env.COMMISSION_NAIRA ?? "30");
-    if (!Number.isFinite(commission) || commission < 0 || commission > 5000) throw new Error("Invalid server commission setting.");
+    const commissionPercent = Number(process.env.COMMISSION_PERCENT ?? "20");
+    if (!Number.isFinite(commissionPercent) || commissionPercent < 0 || commissionPercent > 100) throw new Error("Invalid server commission percentage.");
+    const commission = Math.round(baseAmount * commissionPercent) / 100;
     const total = Math.round((baseAmount + commission) * 100) / 100;
     const reference = "SUB-" + crypto.randomUUID().replace(/-/g,"");
     const inserted = await supabase("orders", { method:"POST", body:JSON.stringify({ reference, user_id:userId, kind, network, phone, email, amount:baseAmount, commission, total, variation_code:kind === "data" ? variationCode : null, plan_name:verifiedPlanName, status:"pending_payment" }) });
