@@ -1,6 +1,6 @@
 # Sub — Nigerian Airtime & Data VTU
 
-A Next.js storefront for MTN, Airtel, Glo and 9mobile airtime/data. Paystack handles checkout; VTpass fulfills purchases after server-side payment verification. Commission is currently configured as a fixed naira fee in the checkout flow.
+A Next.js storefront for MTN, Airtel, Glo and 9mobile airtime/data. Paystack handles checkout; VTpass fulfills purchases after server-side payment verification. A percentage commission is added to each purchase.
 
 ## Stack
 - Next.js 14 App Router (Vercel-ready)
@@ -23,7 +23,7 @@ Import this repository into Vercel. Framework preset: Next.js; Root Directory: `
 Start with `VTU_SANDBOX=true` and Paystack test keys. Test successful, pending, failed, and duplicate callback scenarios before switching to live credentials and `VTU_SANDBOX=false`.
 
 ## Commission
-Set `COMMISSION_NAIRA` on the server and `NEXT_PUBLIC_COMMISSION_NAIRA` to the same display value (default ₦30). The server calculates the final commission and ignores any fee submitted by the browser. Change both environment values together when adjusting your fee. The customer dashboard uses Supabase Auth and lists orders created while the customer is signed in. Existing guest orders are not automatically assigned to accounts. Wallet balance reads the wallet transaction ledger; wallet funding is not enabled yet. Live carrier data-balance/usage is not available from the current VTpass integration and is not represented with fabricated figures.
+The default commission is 20% of the airtime amount or data-plan provider price. Set `COMMISSION_PERCENT` on the server and `NEXT_PUBLIC_COMMISSION_PERCENT` to the same percentage for the customer-facing price display. The server calculates the final commission independently and does not trust any fee submitted by the browser. Change both values together if you adjust the percentage. The customer dashboard uses Supabase Auth and lists orders created while the customer is signed in. Existing guest orders are not automatically assigned to accounts. Wallet balance reads the wallet transaction ledger; wallet funding is not enabled yet. Live carrier data-balance/usage is not available from the current VTpass integration and is not represented with fabricated figures.
 
 ## Important production notes
 - Do not enable live VTpass or live Paystack keys until sandbox tests pass.
