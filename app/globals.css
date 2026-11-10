@@ -365,3 +365,19 @@ footer .brand{color:#f4f2ff}
  .auth-form-heading h3{font-size:21px}
  .auth-socials button{height:44px}
 }
+
+.reset-card{max-width:460px!important;text-align:left!important}
+.reset-brand{display:flex;align-items:center;gap:9px;justify-content:center;margin-bottom:22px;color:#f4f2ff;font:800 23px Manrope}
+.reset-brand .brand-mark{background:linear-gradient(135deg,#7b4dff,#28c7d8)}
+.reset-shield{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;margin:0 auto 17px;background:#292044;color:#bca8ff}
+.reset-card h1{text-align:center;color:#f7f3ff}
+.reset-card>p{text-align:center}
+.reset-form{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.reset-form label{font-size:8px;letter-spacing:1.2px;font-weight:800;color:#c9c2df;margin-top:5px}
+.reset-form input{height:47px;width:100%;padding:0 13px;border:1px solid #39314f;border-radius:9px;background:#0d0b17;color:#f7f4ff;outline:none;font:12px 'DM Sans',sans-serif}
+.reset-form input:focus{border-color:#9c82ff;box-shadow:0 0 0 3px #9c82ff22}
+.reset-password-field{position:relative}
+.reset-password-field input{padding-right:45px}
+.reset-password-field button{position:absolute;right:7px;top:7px;width:32px;height:32px;border:0;background:transparent;color:#aaa2c3}
+.reset-form .auth-submit{width:100%}
+.reset-back{display:block;text-align:center;margin-top:18px;color:#b6a5ff;font-size:10px;font-weight:800;text-decoration:none}
