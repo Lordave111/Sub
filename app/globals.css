@@ -67,3 +67,55 @@
 .plan-cta:hover{background:#e0f1e3}
 .dashboard-disclaimer{font-size:9px;color:#98a39b;margin:11px 2px 0}
 @media(max-width:700px){.dashboard-preview{padding:4px 5% 42px}.dashboard-heading{align-items:start}.dashboard-heading h2{font-size:22px}.dashboard-heading p{font-size:11px;line-height:1.6}.preview-tag{font-size:7px;padding:7px 8px}.dashboard-grid{grid-template-columns:1fr;gap:10px}.dashboard-grid>article{padding:17px}.dash-balance{min-height:205px}.dash-usage{min-height:210px}.dash-plan{min-height:280px}.usage-chart{height:110px}.plan-ring{width:105px;height:105px}}
+
+
+/* Real customer account area */
+.account-auth-card{display:grid;grid-template-columns:1fr .9fr;gap:28px;align-items:center;padding:30px;background:linear-gradient(135deg,#f1f8f1,#fff 65%);border:1px solid #e2ede3;border-radius:19px}
+.auth-copy h2,.account-title h2{font:800 27px Manrope;letter-spacing:-1px;margin:10px 0 8px;color:#173c2d}
+.auth-copy>p,.account-title p{font-size:12px;line-height:1.8;color:#78867e;max-width:390px;margin:0 0 19px}
+.auth-benefit{display:flex;align-items:center;gap:8px;margin:10px 0;font-size:11px;font-weight:700;color:#456b56}
+.auth-benefit svg{width:15px;color:#0b8960}
+.auth-form{background:#fff;padding:22px;border:1px solid #e5eee7;border-radius:14px;box-shadow:0 12px 35px #1c483008;display:flex;flex-direction:column;gap:9px}
+.auth-toggle{display:grid;grid-template-columns:1fr 1fr;background:#f2f6f2;padding:4px;border-radius:8px;margin-bottom:8px}
+.auth-toggle button{border:0;background:transparent;padding:9px;border-radius:6px;font-size:10px;font-weight:800;color:#829087}
+.auth-toggle button.active{background:#fff;color:#087f5b;box-shadow:0 1px 4px #18392d14}
+.auth-form label{font-size:8px;letter-spacing:1.1px;font-weight:800;color:#63736a;margin-top:5px}
+.auth-form input{height:44px;border:1px solid #e3eae4;border-radius:8px;padding:0 12px;outline:none;font-size:12px;color:#17251f}
+.auth-form input:focus{border-color:#66aa8c;box-shadow:0 0 0 3px #e6f4ec}
+.auth-submit{height:46px;border:0;border-radius:8px;background:#087f5b;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-size:11px;font-weight:800;margin-top:8px}
+.auth-submit:disabled{opacity:.5;cursor:not-allowed}
+.auth-notice{padding:9px 10px;border-radius:7px;background:#fff7e8;color:#8a6727;font-size:10px;line-height:1.6;margin:3px 0}
+.auth-config-hint{font-size:9px;line-height:1.6;color:#9a7a39}
+.real-account{padding:25px;background:#fff;border:1px solid #e5eee7;border-radius:18px;box-shadow:0 12px 35px #1c483008}
+.account-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
+.account-title h2{margin-bottom:3px}
+.account-title p{margin:0;font-size:11px}
+.signout-btn,.account-orders-head>button{border:1px solid #e2ebe3;background:#fff;color:#52705e;padding:8px 12px;border-radius:8px;font-size:9px;font-weight:800}
+.account-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.account-stats article{padding:15px;border:1px solid #e8eee9;border-radius:11px;background:#fbfdfb;display:flex;flex-direction:column;gap:6px;min-width:0}
+.account-stats article.account-wallet{background:linear-gradient(145deg,#075d43,#0b8960);border-color:#087f5b;color:#fff}
+.account-stats small{font-size:7px;letter-spacing:1px;color:#849188;font-weight:800}
+.account-stats strong{font:800 22px Manrope;color:#173c2d;overflow-wrap:anywhere}
+.account-stats span{font-size:8px;color:#89968d}
+.account-wallet small,.account-wallet strong,.account-wallet span{color:#fff!important}
+.account-orders-head{display:flex;justify-content:space-between;align-items:center;margin:23px 0 10px}
+.account-orders-head h3{font:800 15px Manrope;margin:0 0 4px;color:#284738}
+.account-orders-head p{font-size:9px;color:#8a978e;margin:0}
+.orders-list{border-top:1px solid #edf2ed}
+.orders-list article{display:flex;align-items:center;gap:11px;padding:12px 3px;border-bottom:1px solid #edf2ed;min-width:0}
+.order-kind{width:33px;height:33px;display:grid;place-items:center;background:#edf7ef;color:#087f5b;border-radius:9px;flex:0 0 auto}
+.order-description{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+.order-description strong{font-size:10px;color:#315342}
+.order-description small{font-size:8px;color:#8b988f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.orders-list article>b{font-size:10px;color:#315342;white-space:nowrap}
+.order-status{font-size:7px;font-style:normal;font-weight:800;text-transform:capitalize;padding:5px 7px;border-radius:20px;background:#f3f5f3;color:#718078;white-space:nowrap}
+.order-status.delivered{background:#e8f7ed;color:#18774c}
+.order-status.failed{background:#fff0ed;color:#b44d37}
+.order-status.pending_payment,.order-status.processing,.order-status.pending_provider{background:#fff7e8;color:#9b762b}
+.empty-orders,.account-loading{padding:25px;text-align:center;background:#f8faf8;border-radius:10px;color:#849188;font-size:10px;line-height:1.7}
+.usage-unavailable{display:flex;align-items:flex-start;gap:10px;padding:13px;margin-top:16px;border:1px solid #e6eee7;background:#f8fbf8;border-radius:10px;color:#668171}
+.usage-unavailable>svg{flex:0 0 auto;color:#0b8960}
+.usage-unavailable div{display:flex;flex-direction:column;gap:4px}
+.usage-unavailable strong{font-size:10px;color:#315342}
+.usage-unavailable span{font-size:9px;line-height:1.6;color:#829087}
+@media(max-width:700px){.account-auth-card{grid-template-columns:1fr;gap:18px;padding:20px}.auth-copy h2,.account-title h2{font-size:23px}.auth-copy>p{margin-bottom:13px}.auth-form{padding:17px}.real-account{padding:17px}.account-stats{grid-template-columns:repeat(2,1fr);gap:8px}.account-stats article{padding:12px}.account-stats strong{font-size:20px}.orders-list article{gap:7px}.order-status{font-size:6px;padding:5px}.account-orders-head h3{font-size:13px}}
