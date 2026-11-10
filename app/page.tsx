@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { Activity, ArrowUpRight, CheckCircle2, CreditCard, Gauge, Menu, ShieldCheck, Smartphone, TrendingUp, Wallet, Wifi, Zap } from "lucide-react";
+import { Activity, Apple, ArrowUpRight, CheckCircle2, CreditCard, Eye, EyeOff, Gauge, Menu, ShieldCheck, Smartphone, TrendingUp, Wallet, Wifi, Zap } from "lucide-react";
 
 type Plan = { variation_code: string; name: string; variation_amount: string; fixedPrice: string };
 const networks = [
@@ -48,7 +48,9 @@ export default function Home() {
     return url && key ? createClient(url, key) : null;
   });
   const [session, setSession] = useState<any>(null);
-  const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
+  const [authMode, setAuthMode] = useState<"login" | "signup" | "forgot">("signup");
+  const [showPassword, setShowPassword] = useState(false);
+  const [authNeedsResend, setAuthNeedsResend] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [authBusy, setAuthBusy] = useState(false);
@@ -84,19 +86,48 @@ export default function Home() {
       .finally(() => setAccountBusy(false));
   }, [session]);
   async function handleAuth(e: React.FormEvent) {
-    e.preventDefault(); setAuthNotice("");
-    if (!supabaseClient) { setAuthNotice("Supabase is not connected. Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in Vercel."); return; }
+    e.preventDefault(); setAuthNotice(""); setAuthNeedsResend(false);
+    if (!supabaseClient) { setAuthNotice("Supabase is not connected. Check your public URL and publishable key in Vercel."); return; }
     setAuthBusy(true);
     try {
-      const result = authMode === "signup"
-        ? await supabaseClient.auth.signUp({ email: authEmail, password: authPassword })
-        : await supabaseClient.auth.signInWithPassword({ email: authEmail, password: authPassword });
-      if (result.error) throw result.error;
-      setEmail(authEmail);
-      if (authMode === "signup" && !result.data.session) setAuthNotice("Account created. Check your email to confirm it, then sign in.");
-      else setAuthNotice(authMode === "signup" ? "Your account is ready." : "Welcome back.");
-    } catch (error) { setAuthNotice(error instanceof Error ? error.message : "Authentication failed."); }
-    finally { setAuthBusy(false); }
+      if (authMode === "forgot") {
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(authEmail, {
+          redirectTo: window.location.origin + "/auth/reset-password",
+        });
+        if (error) throw error;
+        setAuthNotice("If an account exists for this email, a password reset link is on its way. Check your inbox and spam folder.");
+      } else if (authMode === "signup") {
+        const { data, error } = await supabaseClient.auth.signUp({ email: authEmail, password: authPassword, options: { emailRedirectTo: window.location.origin + "/auth/callback" } });
+        if (error) throw error;
+        setEmail(authEmail);
+        setAuthNotice(data.session ? "Your account is ready. Welcome to Sub!" : "Account created. Check your email to confirm your address, then sign in.");
+      } else {
+        const { error } = await supabaseClient.auth.signInWithPassword({ email: authEmail, password: authPassword });
+        if (error) throw error;
+        setEmail(authEmail);
+        setAuthNotice("Welcome back.");
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Authentication failed.";
+      setAuthNotice(message);
+      if (/email not confirmed/i.test(message)) setAuthNeedsResend(true);
+    } finally { setAuthBusy(false); }
+  }
+  async function signInWithProvider(provider: "google" | "apple") {
+    if (!supabaseClient) { setAuthNotice("Supabase is not connected. Check your public URL and publishable key in Vercel."); return; }
+    setAuthNotice(""); setAuthBusy(true);
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: window.location.origin + "/auth/callback" },
+    });
+    if (error) { setAuthNotice(error.message); setAuthBusy(false); }
+  }
+  async function resendConfirmation() {
+    if (!supabaseClient || !authEmail) return;
+    setAuthBusy(true); setAuthNotice("");
+    const { error } = await supabaseClient.auth.resend({ type: "signup", email: authEmail, options: { emailRedirectTo: window.location.origin + "/auth/callback" } });
+    setAuthNotice(error ? error.message : "A new confirmation email has been sent. Check your inbox and spam folder.");
+    setAuthBusy(false);
   }
   async function signOut() {
     await supabaseClient?.auth.signOut();
@@ -141,12 +172,16 @@ export default function Home() {
       {!session ? <div className="account-auth-card">
         <div className="auth-copy"><div className="eyebrow">YOUR SUB ACCOUNT</div><h2>Everything connected, in one place.</h2><p>Create an account to keep your purchases together and view your real order history whenever you return.</p><div className="auth-benefit"><CheckCircle2/> Track airtime and data orders</div><div className="auth-benefit"><CheckCircle2/> See delivery and payment status</div><div className="auth-benefit"><CheckCircle2/> Keep your account private</div></div>
         <form className="auth-form" onSubmit={handleAuth}>
-          <div className="auth-toggle"><button type="button" className={authMode === "signup" ? "active" : ""} onClick={() => {setAuthMode("signup");setAuthNotice("");}}>Create account</button><button type="button" className={authMode === "login" ? "active" : ""} onClick={() => {setAuthMode("login");setAuthNotice("");}}>Sign in</button></div>
+          <div className="auth-form-heading"><span className="auth-kicker">WELCOME TO SUB</span><h3>{authMode === "signup" ? "Create your account" : authMode === "forgot" ? "Reset your password" : "Good to see you again"}</h3><p>{authMode === "signup" ? "One account for every top-up and order." : authMode === "forgot" ? "We’ll email you a secure link to choose a new password." : "Sign in to continue to your Sub dashboard."}</p></div>
+          <div className="auth-toggle"><button type="button" className={authMode === "signup" ? "active" : ""} onClick={() => {setAuthMode("signup");setAuthNotice("");setAuthNeedsResend(false);}}>Create account</button><button type="button" className={authMode !== "signup" ? "active" : ""} onClick={() => {setAuthMode("login");setAuthNotice("");setAuthNeedsResend(false);}}>Sign in</button></div>
           <label htmlFor="account-email">EMAIL ADDRESS</label><input id="account-email" type="email" autoComplete="email" placeholder="you@example.com" value={authEmail} onChange={e => setAuthEmail(e.target.value)} required/>
-          <label htmlFor="account-password">PASSWORD</label><input id="account-password" type="password" autoComplete={authMode === "signup" ? "new-password" : "current-password"} minLength={6} placeholder="At least 6 characters" value={authPassword} onChange={e => setAuthPassword(e.target.value)} required/>
+          {authMode !== "forgot" && <><div className="auth-password-label"><label htmlFor="account-password">PASSWORD</label>{authMode === "login" && <button type="button" onClick={() => {setAuthMode("forgot");setAuthNotice("");}}>Forgot password?</button>}</div><div className="auth-password-field"><input id="account-password" type={showPassword ? "text" : "password"} autoComplete={authMode === "signup" ? "new-password" : "current-password"} minLength={6} placeholder="At least 6 characters" value={authPassword} onChange={e => setAuthPassword(e.target.value)} required/><button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(value => !value)}>{showPassword ? <EyeOff size={17}/> : <Eye size={17}/>}</button></div></>}
+          {authMode === "forgot" && <button type="button" className="auth-back-link" onClick={() => {setAuthMode("login");setAuthNotice("");}}>← Back to sign in</button>}
           {authNotice && <p className="auth-notice">{authNotice}</p>}
-          <button className="auth-submit" disabled={authBusy || !supabaseClient}>{authBusy ? "Please wait…" : authMode === "signup" ? "Create my account" : "Sign in securely"} <ArrowUpRight size={16}/></button>
-          {!supabaseClient && <small className="auth-config-hint">Account sign-in will activate after the Supabase public key is added in Vercel.</small>}
+          {authNeedsResend && <button type="button" className="auth-resend" disabled={authBusy} onClick={resendConfirmation}>Resend confirmation email</button>}
+          <button className="auth-submit" disabled={authBusy || !supabaseClient}>{authBusy ? "Please wait…" : authMode === "signup" ? "Create my account" : authMode === "forgot" ? "Send reset link" : "Sign in securely"} <ArrowUpRight size={16}/></button>
+          {authMode !== "forgot" && <><div className="auth-divider"><span>OR CONTINUE WITH</span></div><div className="auth-socials"><button type="button" disabled={authBusy || !supabaseClient} onClick={() => signInWithProvider("google")}><span className="google-g">G</span><span>Google</span></button><button type="button" disabled={authBusy || !supabaseClient} onClick={() => signInWithProvider("apple")}><Apple size={18}/><span>Apple</span></button></div><p className="auth-legal">Protected with encrypted authentication. By continuing, you agree to Sub’s terms and privacy policy.</p></>}
+          {!supabaseClient && <small className="auth-config-hint">Add the Supabase URL and public publishable key in Vercel to activate account access.</small>}
         </form>
       </div> : <div className="real-account">
         <div className="account-title"><div><div className="eyebrow">CUSTOMER DASHBOARD</div><h2>Welcome back.</h2><p>{session.user?.email}</p></div><button type="button" onClick={signOut} className="signout-btn">Sign out</button></div>
