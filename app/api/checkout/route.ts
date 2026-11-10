@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
       verifiedPlanName = String(chosen.name || "Data bundle");
       if (!Number.isFinite(baseAmount) || baseAmount <= 0) throw new Error("Provider returned an invalid plan price.");
     }
-    const commissionPercent = Number(process.env.COMMISSION_PERCENT ?? "20");
+    const commissionPercent = 10;
     if (!Number.isFinite(commissionPercent) || commissionPercent < 0 || commissionPercent > 100) throw new Error("Invalid server commission percentage.");
     const commission = Math.round(baseAmount * commissionPercent) / 100;
     const total = Math.round((baseAmount + commission) * 100) / 100;
