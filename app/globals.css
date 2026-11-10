@@ -287,3 +287,31 @@ footer .brand{color:#f4f2ff}
 .result-card p,.result-card small{color:#aaa3c1}
 .nav{background:#100e1d}
 @media(max-width:700px){.nav{background:#151322;border-color:#39314f}.purchase-card{border-radius:16px}.plan-category-tabs{margin-right:-2px}}
+
+
+/* Compact mobile plan grid with progressive reveal */
+.plans-see-more{display:none}
+@media(max-width:640px){
+  .advanced-plan-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .advanced-plan{padding:10px;gap:7px;border-radius:12px}
+  .plan-size{font-size:20px;letter-spacing:-.6px}
+  .plan-name{font-size:8px;min-height:22px;overflow-wrap:anywhere}
+  .plan-card-top{gap:5px;min-height:23px}
+  .plan-network-mark{width:22px;height:22px;border-radius:7px;font-size:10px}
+  .plan-validity{font-size:7px;padding:4px 6px}
+  .plan-card-bottom{padding-top:8px;gap:3px;align-items:flex-start}
+  .plan-card-bottom b{font-size:14px}
+  .plan-card-bottom small{font-size:6px}
+  .plan-base-price{font-size:7px;align-self:flex-end}
+  .mobile-plan-hidden{display:none!important}
+  .plans-see-more{width:100%;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:9px;padding:12px;border:1px solid #514276;border-radius:12px;background:#211a36;color:#c9b8ff;font-size:11px;font-weight:800}
+  .plans-see-more span{font-size:17px;line-height:10px}
+  .plan-category-tabs{gap:6px}
+  .plan-category-tabs button{padding:8px 10px;font-size:9px}
+}
+@media(max-width:360px){
+  .advanced-plan-grid{gap:6px}
+  .advanced-plan{padding:8px}
+  .plan-size{font-size:18px}
+  .plan-card-bottom b{font-size:13px}
+}
