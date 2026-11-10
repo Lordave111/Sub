@@ -6,7 +6,7 @@ export async function getAuthenticatedUserId(request: Request): Promise<string |
   if (!token) return null;
   const response = await fetch(env("SUPABASE_URL") + "/auth/v1/user", {
     headers: {
-      apikey: env("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+      apikey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || env("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
       Authorization: "Bearer " + token,
     },
     cache: "no-store",
