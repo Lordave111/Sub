@@ -131,7 +131,7 @@ export default function Home() {
         <div className="account-title"><div><div className="eyebrow">CUSTOMER DASHBOARD</div><h2>Welcome back.</h2><p>{session.user?.email}</p></div><button type="button" onClick={signOut} className="signout-btn">Sign out</button></div>
         {accountBusy ? <div className="account-loading">Loading your account activity…</div> : account ? <>
           <div className="account-stats">
-            <article className="account-wallet"><small>WALLET BALANCE</small><strong>{money(Number(account.walletBalance || 0))}</strong><span>Available wallet funds</span></article>
+            <article className="account-wallet"><small>WALLET LEDGER</small><strong>{money(Number(account.walletBalance || 0))}</strong><span>Wallet funding is not enabled yet</span></article>
             <article><small>TOTAL PURCHASES</small><strong>{account.stats.totalOrders}</strong><span>Orders on this account</span></article>
             <article><small>DELIVERED</small><strong>{account.stats.delivered}</strong><span>Successfully completed</span></article>
             <article><small>IN PROGRESS</small><strong>{account.stats.pending}</strong><span>Awaiting confirmation</span></article>
