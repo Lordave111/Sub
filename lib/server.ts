@@ -8,6 +8,6 @@ export function requestId() {
   return get("year") + get("month") + get("day") + get("hour") + get("minute") + crypto.randomUUID().replace(/-/g, "").slice(0, 12);
 }
 export async function supabase(path: string, init: RequestInit = {}) {
-  const url = env("SUPABASE_URL"), key = env("SUPABASE_SERVICE_ROLE_KEY");
+  const url = env("SUPABASE_URL"), key = process.env.SUPABASE_SECRET_KEY || env("SUPABASE_SERVICE_ROLE_KEY");
   return fetch(url + "/rest/v1/" + path, { ...init, headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": "application/json", Prefer: "return=representation", ...(init.headers || {}) }, cache: "no-store" });
 }
