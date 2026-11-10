@@ -71,6 +71,7 @@ export default function Home() {
         ? await supabaseClient.auth.signUp({ email: authEmail, password: authPassword })
         : await supabaseClient.auth.signInWithPassword({ email: authEmail, password: authPassword });
       if (result.error) throw result.error;
+      setEmail(authEmail);
       if (authMode === "signup" && !result.data.session) setAuthNotice("Account created. Check your email to confirm it, then sign in.");
       else setAuthNotice(authMode === "signup" ? "Your account is ready." : "Welcome back.");
     } catch (error) { setAuthNotice(error instanceof Error ? error.message : "Authentication failed."); }
