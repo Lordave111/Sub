@@ -31,3 +31,15 @@ The default commission is 20% of the airtime amount or data-plan provider price.
 - Keep Supabase service-role and all provider secrets server-only.
 - Provider responses marked pending are recorded as pending and must be reconciled using VTpass requery before any retry; never blindly resubmit a pending purchase.
 - This is an integration starter, not yet a fully audited money-handling system.
+
+
+## Digital subscriptions marketplace
+
+A customer subscription area is available at `/subscriptions`. It includes account-linked subscription records, active/expired/pending status display, expiry dates, renewal-preference controls, and subscription payment history.
+
+Before using the subscription area, run `supabase/subscriptions-migration.sql` in the Supabase SQL Editor. The migration creates:
+- `subscription_catalog` for supplier-backed products and current plans;
+- `user_subscriptions` for each customer's activated services;
+- `subscription_orders` for payment and fulfillment history.
+
+**Important:** Netflix, Spotify, YouTube Premium, Apple Music, Showmax and TV services currently appear as upcoming catalogue options only. They are not purchasable yet. No supplier API, live plan pricing, activation or recurring billing has been configured for these brands. Do not accept payment for these services until an authorized supplier integration and server-side payment/fulfillment verification are implemented. The auto-renew switch currently stores a customer preference; it does not initiate recurring Paystack charges or cancel a provider-side subscription.
