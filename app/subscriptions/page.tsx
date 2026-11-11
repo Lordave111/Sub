@@ -1,4 +1,5 @@
 "use client";
+import "./subscriptions.css";
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { ArrowLeft, CalendarClock, CheckCircle2, CircleAlert, RefreshCw, ShieldCheck, Tv, Music2, Clapperboard } from "lucide-react";
