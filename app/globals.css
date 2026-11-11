@@ -494,3 +494,5 @@ img,svg,video,canvas{max-width:100%}
  .plan-card-bottom b{font-size:12px}
  .network{font-size:9px;padding:0 6px}
 }
+
+.more-services-grid .service-link{flex:0 0 auto;padding:7px 10px;border:1px solid #cfe4d4;border-radius:8px;background:#f1f8f2;color:#087f5b;text-decoration:none;font-size:9px;font-weight:800}.more-services-grid .service-link:hover{background:#e1f1e4}.subs-disclaimer{font-size:9px;line-height:1.7;color:#9288a5;margin:12px 2px 0}
