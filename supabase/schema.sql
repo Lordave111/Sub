@@ -2,9 +2,9 @@
 create table if not exists public.orders (
   id bigint generated always as identity primary key,
   reference text not null unique,
-  kind text not null check (kind in ('data','airtime')),
+  kind text not null check (kind in ('data','airtime','electricity')),
   network text not null,
-  phone text not null,
+  phone text not null,\n  billers_code text,
   email text not null,
   amount numeric(12,2) not null,
   commission numeric(12,2) not null default 0,
