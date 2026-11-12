@@ -1035,3 +1035,112 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{ou
  .service-tabs .tab{flex:1;padding:11px 8px!important;justify-content:center!important}
  .advanced-plan{padding:12px!important}
 }
+
+
+/* GITHUB-INSPIRED MONOCHROME SYSTEM — no purple, violet or colour filters */
+:root{
+ --ink:#e6edf3!important;--muted:#8b949e!important;--green:#f0f6fc!important;
+ --lime:#c9d1d9!important;--line:#30363d!important;--bg:#0d1117!important;
+ --lab-bg:#0d1117;--lab-panel:#161b22;--lab-line:#30363d;
+}
+html,body{background:#0d1117!important;color:#e6edf3!important}
+body{font-family:Arial,Helvetica,sans-serif!important}
+.topbar,.nav,.nav-open{background:#010409!important;border-color:#30363d!important}
+.brand,.brand:hover{color:#f0f6fc!important}
+.brand-mark{background:#f0f6fc!important;color:#0d1117!important;border:1px solid #f0f6fc!important;border-radius:7px!important}
+.brand-dot,.nav a:hover,footer a:hover{color:#fff!important}
+.nav a,footer a,.secure,.trust-mini{color:#8b949e!important}
+.secure svg,.trust-mini svg{color:#c9d1d9!important}
+.hero{background:#0d1117!important}
+.hero-copy .eyebrow,.hero-status,.purchase-heading .eyebrow,.suite-heading .eyebrow,.benefits>.eyebrow{color:#c9d1d9!important}
+.pulse,.hero-status:before,.live-ping{background:#f0f6fc!important;box-shadow:0 0 0 3px #ffffff16!important}
+.hero-copy h1,.hero-copy h1 span,.suite-heading h2,.suite-heading h2 span{color:#f0f6fc!important;-webkit-text-fill-color:#f0f6fc!important;background:none!important}
+.hero-copy>p,.hero-points span,.suite-heading p{color:#8b949e!important}
+.hero-points svg{color:#c9d1d9!important}
+.orbit{border-color:#30363d!important}
+.orbit-two{border-color:#484f58!important}
+.phone-card{background:#010409!important;border-color:#484f58!important;box-shadow:0 20px 55px #000!important}
+.phone-screen{background:#161b22!important}
+.screen-greeting,.screen-balance small,.screen-balance span{color:#8b949e!important}
+.screen-title{color:#f0f6fc!important}
+.screen-balance{background:#21262d!important;border:1px solid #484f58!important;color:#fff!important}
+.screen-bars i,.screen-bars i:nth-child(n){background:#484f58!important}
+.float-chip{background:#161b22!important;border:1px solid #30363d!important;color:#e6edf3!important;box-shadow:0 8px 24px #0008!important}
+.float-chip svg{color:#c9d1d9!important}
+.live-overview,.account-auth-card,.real-account,.purchase-card,.suite-card,.dashboard-grid>article,.benefit-grid article{
+ background:#161b22!important;border:1px solid #30363d!important;border-radius:10px!important;
+ box-shadow:0 8px 24px #0005!important;
+}
+.live-overview-head{background:#0d1117!important;border-color:#30363d!important;color:#8b949e!important}
+.live-overview-head b,.live-metrics article strong,.metric-icon{color:#f0f6fc!important}
+.live-metrics{background:#161b22!important;border-color:#30363d!important}
+.live-metrics article,.real-account .account-stats article,.account-insights>article{
+ background:#0d1117!important;border:1px solid #30363d!important;border-radius:8px!important;box-shadow:none!important
+}
+.live-metrics article small,.live-metrics article em,.metric-icon{color:#8b949e!important}
+.auth-form{background:#0d1117!important;border:1px solid #30363d!important;border-radius:9px!important}
+.auth-form input,.reset-form input,.purchase-card input,.purchase-card select,.purchase-card textarea,.input-wrap{
+ background:#0d1117!important;border:1px solid #30363d!important;color:#e6edf3!important;border-radius:6px!important
+}
+.auth-form input:focus,.reset-form input:focus,.purchase-card input:focus,.purchase-card select:focus,.input-wrap:focus-within{
+ border-color:#8b949e!important;box-shadow:0 0 0 3px #8b949e22!important
+}
+.auth-form input::placeholder,.purchase-card input::placeholder{color:#6e7681!important}
+.auth-form label,.field label,.plan-picker-heading label{color:#c9d1d9!important}
+.auth-copy h2,.account-title h2,.auth-form-heading h3,.purchase-heading h2,.dashboard-heading h2,.suite-heading h2,.benefits h2{color:#f0f6fc!important}
+.auth-copy>p,.auth-benefit,.auth-form-heading p,.purchase-heading p,.field small,.suite-card p,.benefit-grid p{color:#8b949e!important}
+.auth-toggle button,.auth-socials button,.order-filter-tabs button,.service-tabs .tab{
+ background:#21262d!important;border:1px solid #30363d!important;color:#c9d1d9!important;border-radius:6px!important
+}
+.auth-toggle button.active,.order-filter-tabs button.active,.service-tabs .tab.active{
+ background:#f0f6fc!important;color:#0d1117!important;border-color:#f0f6fc!important
+}
+.auth-submit,.pay-btn{
+ background:#f0f6fc!important;color:#0d1117!important;border:1px solid #f0f6fc!important;
+ border-radius:6px!important;box-shadow:none!important;font-weight:700!important
+}
+.auth-submit:hover,.pay-btn:hover{background:#c9d1d9!important;filter:none!important;transform:translateY(-1px)}
+.auth-socials button:hover,.auth-toggle button:hover,.order-filter-tabs button:hover{border-color:#8b949e!important}
+.network,.advanced-plan,.suite-card button,.repeat-order,.real-account .signout-btn,.account-orders-head button,.plan-category-tabs button,.plans-see-more{
+ background:#0d1117!important;border:1px solid #30363d!important;color:#c9d1d9!important;border-radius:6px!important;box-shadow:none!important
+}
+.network:hover,.advanced-plan:hover,.suite-card button:hover,.repeat-order:hover,.real-account .signout-btn:hover,.account-orders-head button:hover{
+ background:#21262d!important;border-color:#8b949e!important;transform:translateY(-1px)
+}
+.network.selected,.network.active,.advanced-plan.selected,.advanced-plan.active,.plan-category-tabs button.active{
+ background:#21262d!important;border:1px solid #f0f6fc!important;color:#fff!important;box-shadow:inset 0 0 0 1px #ffffff18!important
+}
+.network-logo,.plan-network-mark{background:#f0f6fc!important;color:#0d1117!important;border:1px solid #f0f6fc!important;border-radius:6px!important}
+.network-check,.advanced-plan svg{color:#f0f6fc!important}
+.plan-validity,.plan-name,.plan-card-bottom small{color:#8b949e!important}
+.plan-card-bottom b,.advanced-plan .plan-size{color:#f0f6fc!important}
+.price-summary,.usage-foot,.account-orders-head,.order-filter-tabs{background:#0d1117!important;border-color:#30363d!important}
+.price-summary strong,.total-row strong,.real-account .account-stats strong,.insight-spend>strong{color:#f0f6fc!important}
+.dash-balance,.real-account .account-wallet{background:#21262d!important;border:1px solid #484f58!important;color:#f0f6fc!important}
+.dash-balance *,.real-account .account-wallet *{color:#f0f6fc!important}
+.usage-track,.plan-progress,.plan-ring:before{background:#30363d!important}
+.usage-track i,.plan-progress i{background:#c9d1d9!important}
+.plan-ring{background:conic-gradient(#f0f6fc 0 64%,#30363d 64% 100%)!important}
+.plan-ring strong,.plan-info strong,.plan-meta b{color:#f0f6fc!important}
+.suite-card-icon,.benefit-icon{background:#21262d!important;border:1px solid #484f58!important;color:#f0f6fc!important}
+.suite-card>small,.suite-airtime>small,.suite-history>small{color:#8b949e!important}
+.suite-card h3,.benefit-grid h3{color:#f0f6fc!important}
+.demo-label,.preview-tag{background:#21262d!important;border:1px solid #484f58!important;color:#c9d1d9!important}
+.preview-tag span{background:#f0f6fc!important;box-shadow:0 0 0 3px #ffffff18!important}
+.result-page{background:#0d1117!important}
+.result-card{background:#161b22!important;border:1px solid #30363d!important;color:#e6edf3!important;box-shadow:none!important}
+.result-card h1,.result-card strong{color:#f0f6fc!important}
+.result-card p,.reference{color:#8b949e!important}
+.reference{background:#0d1117!important;border:1px solid #30363d!important}
+.result-btn{background:#f0f6fc!important;color:#0d1117!important;border-radius:6px!important}
+.notice{background:#21262d!important;color:#e6edf3!important;border:1px solid #484f58!important}
+footer,.footer,.site-footer{background:#010409!important;border-color:#30363d!important;color:#8b949e!important}
+a{ text-decoration-color:#484f58 }
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #f0f6fc!important;outline-offset:2px}
+@media(max-width:760px){
+ .topbar{background:#010409!important}
+ .nav{background:#010409!important}
+ .hero{padding-top:48px!important}
+ .live-metrics article{border-radius:7px!important}
+ .purchase-card{padding:14px!important}
+}
