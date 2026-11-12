@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     const claimed = await claim.json();
     if (!claimed?.length) return NextResponse.json({ status:"processing", message:"Order is already being processed." });
     const sandbox = process.env.VTU_SANDBOX !== "false";
-    const payload: Record<string,unknown> = { request_id:requestId(), serviceID:order.kind === "airtime" ? ({mtn:"mtn",airtel:"airtel",glo:"glo","9mobile":"etisalat"} as any)[order.network] : ({mtn:"mtn-data",airtel:"airtel-data",glo:"glo-data","9mobile":"etisalat-data"} as any)[order.network], phone:order.phone };
+    const payload: Record<string,unknown> = { request_id:requestId(), serviceID:order.kind === "airtime" ? ({mtn:"mtn",airtel:"airtel",glo:"glo","9mobile":"etisalat"} as any)[order.network] : order.kind === "electricity" ? order.network : ({mtn:"mtn-data",airtel:"airtel-data",glo:"glo-data","9mobile":"etisalat-data"} as any)[order.network], phone:order.phone };
     if (order.kind === "airtime") payload.amount = order.amount;
     else payload.variation_code = order.variation_code;
     const vend = await fetch((sandbox ? "https://sandbox.vtpass.com/api" : "https://vtpass.com/api")+"/pay", { method:"POST", headers:{ "Content-Type":"application/json", "api-key":env("VTPASS_API_KEY"), "secret-key":env("VTPASS_SECRET_KEY") }, body:JSON.stringify(payload) });
@@ -27,6 +27,6 @@ export async function POST(req: NextRequest) {
     const delivered = code === "000" || providerStatus.toLowerCase() === "delivered";
     const pending = code === "099" || providerStatus.toLowerCase() === "pending";
     await supabase("orders?reference=eq."+encodeURIComponent(reference), { method:"PATCH", body:JSON.stringify({ status:delivered ? "delivered" : pending ? "pending_provider" : "failed", provider_reference:result.requestId || result.content?.transactions?.transactionId || null, provider_response:result, delivered_at:delivered ? new Date().toISOString() : null }) });
-    return NextResponse.json({ status:delivered ? "delivered" : pending ? "pending_provider" : "failed", message:delivered ? "Your purchase was delivered." : pending ? "Your provider is processing the order. Please check back shortly." : "The provider could not complete this order. Contact support with your reference." });
+    return NextResponse.json({ status:delivered ? "delivered" : pending ? "pending_provider" : "failed", message:delivered ? "Your purchase was delivered." : pending ? "Your provider is processing the order. Please check back shortly." : "The provider could not complete this order. Contact support with your reference.", token:order.kind === "electricity" ? (result.Token || result.purchased_code || result.token || null) : null, units:order.kind === "electricity" ? (result.Units || null) : null, customerName:order.kind === "electricity" ? (result.CustomerName || null) : null });
   } catch(e) { return NextResponse.json({ error:e instanceof Error ? e.message : "Verification failed." }, { status:500 }); }
 }
