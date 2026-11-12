@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
     const userId = await getAuthenticatedUserId(req);
     if (!userId) return NextResponse.json({ error: "Sign in to view your account." }, { status: 401 });
     const [ordersResponse, walletResponse] = await Promise.all([
-      supabase("orders?user_id=eq." + encodeURIComponent(userId) + "&select=reference,kind,network,phone,amount,total,plan_name,status,created_at,delivered_at&order=created_at.desc&limit=30"),
+      supabase("orders?user_id=eq." + encodeURIComponent(userId) + "&select=reference,kind,network,phone,billers_code,amount,total,plan_name,status,created_at,delivered_at&order=created_at.desc&limit=30"),
       supabase("wallet_transactions?user_id=eq." + encodeURIComponent(userId) + "&select=amount,type")
     ]);
     if (!ordersResponse.ok) throw new Error("Could not load your purchase history.");
