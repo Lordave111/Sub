@@ -23,7 +23,7 @@ Import this repository into Vercel. Framework preset: Next.js; Root Directory: `
 Start with `VTU_SANDBOX=true` and Paystack test keys. Test successful, pending, failed, and duplicate callback scenarios before switching to live credentials and `VTU_SANDBOX=false`.
 
 ## Commission
-The default commission is 20% of the airtime amount or data-plan provider price. Set `COMMISSION_PERCENT` on the server and `NEXT_PUBLIC_COMMISSION_PERCENT` to the same percentage for the customer-facing price display. The server calculates the final commission independently and does not trust any fee submitted by the browser. Change both values together if you adjust the percentage. The customer dashboard uses Supabase Auth and lists orders created while the customer is signed in. Existing guest orders are not automatically assigned to accounts. Wallet balance reads the wallet transaction ledger; wallet funding is not enabled yet. Live carrier data-balance/usage is not available from the current VTpass integration and is not represented with fabricated figures.
+The default commission is 10% of the airtime amount or data-plan provider price. Set `COMMISSION_PERCENT` on the server and `NEXT_PUBLIC_COMMISSION_PERCENT` to the same percentage for the customer-facing price display. The server calculates the final commission independently and does not trust any fee submitted by the browser. Change both values together if you adjust the percentage. The customer dashboard uses Supabase Auth and lists orders created while the customer is signed in. Existing guest orders are not automatically assigned to accounts. Wallet balance reads the wallet transaction ledger; wallet funding is not enabled yet. Live carrier data-balance/usage is not available from the current VTpass integration and is not represented with fabricated figures.
 
 ## Important production notes
 - Do not enable live VTpass or live Paystack keys until sandbox tests pass.
@@ -33,13 +33,9 @@ The default commission is 20% of the airtime amount or data-plan provider price.
 - This is an integration starter, not yet a fully audited money-handling system.
 
 
-## Digital subscriptions marketplace
 
-A customer subscription area is available at `/subscriptions`. It includes account-linked subscription records, active/expired/pending status display, expiry dates, renewal-preference controls, and subscription payment history.
+## Product scope
 
-Before using the subscription area, run `supabase/subscriptions-migration.sql` in the Supabase SQL Editor. The migration creates:
-- `subscription_catalog` for supplier-backed products and current plans;
-- `user_subscriptions` for each customer's activated services;
-- `subscription_orders` for payment and fulfillment history.
+Sub is focused on Nigerian airtime and mobile data for MTN, Airtel, Glo and 9mobile. The customer dashboard provides account-linked purchase history, delivered/pending order counts, recent spending analytics, data/airtime filters, and a repeat-purchase shortcut. No streaming, cable TV, electricity, education-pin or other unrelated service catalogue is included.
 
-**Important:** Netflix, Spotify, YouTube Premium, Apple Music, Showmax and TV services currently appear as upcoming catalogue options only. They are not purchasable yet. No supplier API, live plan pricing, activation or recurring billing has been configured for these brands. Do not accept payment for these services until an authorized supplier integration and server-side payment/fulfillment verification are implemented. The auto-renew switch currently stores a customer preference; it does not initiate recurring Paystack charges or cancel a provider-side subscription.
+The 7-day activity chart is calculated from the customer's latest 30 stored orders; it is purchase activity, not a carrier-reported remaining data balance. Live network usage and data balance are not available from the current VTpass setup and are not fabricated. Wallet funding is also not enabled.
