@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const userId = await getAuthenticatedUserId(req);
     if (!userId) return NextResponse.json({ error:"Sign in to make a purchase." }, { status:401 });
     const body = await req.json();
-    const { kind, network, phone, email, amount, variationCode } = body;
+    const { kind, network, phone, email, amount, variationCode, disco, meterNumber } = body;
     if (!["data","airtime"].includes(kind) || !serviceIds[network] || !/^0[789][01]\d{8}$/.test(phone || "") || !/^\S+@\S+\.\S+$/.test(email || "")) return NextResponse.json({ error:"Invalid purchase details." }, { status:400 });
     let baseAmount = 0, verifiedPlanName: string | null = null;
     if (kind === "airtime") {
@@ -31,9 +31,9 @@ export async function POST(req: NextRequest) {
     const commission = Math.round(baseAmount * commissionPercent) / 100;
     const total = Math.round((baseAmount + commission) * 100) / 100;
     const reference = "SUB-" + crypto.randomUUID().replace(/-/g,"");
-    const inserted = await supabase("orders", { method:"POST", body:JSON.stringify({ reference, user_id:userId, kind, network, phone, email, amount:baseAmount, commission, total, variation_code:kind === "data" ? variationCode : null, plan_name:verifiedPlanName, status:"pending_payment" }) });
+    const inserted = await supabase("orders", { method:"POST", body:JSON.stringify({ reference, user_id:userId, kind, network:kind === "electricity" ? disco : network, phone, billers_code:kind === "electricity" ? meterNumber : null, email, amount:baseAmount, commission, total, variation_code:kind === "data" ? variationCode : kind === "electricity" ? "prepaid" : null, plan_name:verifiedPlanName, status:"pending_payment" }) });
     if (!inserted.ok) throw new Error("Order storage is not ready. Configure Supabase using the included SQL schema.");
-    const pay = await fetch("https://api.paystack.co/transaction/initialize", { method:"POST", headers:{ Authorization:"Bearer " + env("PAYSTACK_SECRET_KEY"), "Content-Type":"application/json" }, body:JSON.stringify({ email, amount:String(nairaToKobo(total)), currency:"NGN", reference, callback_url:siteUrl()+"/payment/verify", metadata:{ order_reference:reference, kind, network, phone } }) });
+    const pay = await fetch("https://api.paystack.co/transaction/initialize", { method:"POST", headers:{ Authorization:"Bearer " + env("PAYSTACK_SECRET_KEY"), "Content-Type":"application/json" }, body:JSON.stringify({ email, amount:String(nairaToKobo(total)), currency:"NGN", reference, callback_url:siteUrl()+"/payment/verify", metadata:{ order_reference:reference, kind, network:kind === "electricity" ? disco : network, phone, meter_number:kind === "electricity" ? meterNumber : undefined } }) });
     const result = await pay.json();
     if (!pay.ok || !result.status || !result.data?.authorization_url) throw new Error(result.message || "Could not initialize Paystack payment.");
     return NextResponse.json({ authorizationUrl:result.data.authorization_url });
