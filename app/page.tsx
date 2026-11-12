@@ -186,7 +186,7 @@ export default function Home() {
     if (!email.includes("@")) return setNotice("Enter a valid email address for your receipt.");
     if (kind === "data" && !chosen) return setNotice("Choose a data plan first.");
     if (kind === "airtime" && (basePrice < 50 || basePrice > 50000)) return setNotice("Airtime must be between ₦50 and ₦50,000.");
-    if (kind === "electricity" && (!meterVerified || !/^\\d{8,13}$/.test(meterNumber))) return setNotice("Verify your prepaid meter number before continuing.");
+    if (kind === "electricity" && (!meterVerified || !/^\d{8,13}$/.test(meterNumber))) return setNotice("Verify your prepaid meter number before continuing.");
     if (kind === "electricity" && basePrice < 1000) return setNotice("Electricity purchase must be at least ₦1,000.");
     if (!session?.access_token) return setNotice("Please sign in or create an account before purchasing.");
     setLoading(true);
