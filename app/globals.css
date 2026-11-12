@@ -923,3 +923,115 @@ body:before{
 .notice{border-radius:10px}
 a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #fff!important;outline-offset:3px}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+
+/* SUB / MONOCHROME REFINEMENT — real black/white surfaces, no colour filters */
+:root{
+  --lab-bg:#050505;--lab-panel:#111;--lab-panel-raised:#191919;
+  --lab-line:#383838;--lab-white:#fff;--lab-copy:#c2c2c2;--lab-muted:#888;
+}
+body{background:#050505!important;color:#f7f7f7!important}
+.topbar{backdrop-filter:blur(18px);background:rgba(5,5,5,.94)!important}
+.brand-mark{border-radius:10px!important}
+.hero{min-height:560px!important;padding-top:100px!important;padding-bottom:90px!important}
+.hero-copy .eyebrow,.suite-heading .eyebrow,.purchase-heading .eyebrow{letter-spacing:2.4px!important;font-weight:800!important}
+.hero-copy h1{font-size:clamp(46px,7vw,86px)!important;max-width:760px!important}
+.hero-copy h1 span{display:inline-block;color:#aaa!important;-webkit-text-fill-color:#aaa!important}
+.hero-art .phone-card{background:#0b0b0b!important;border:1px solid #777!important;border-radius:30px!important}
+.hero-art .phone-screen{border-radius:23px!important}
+.live-overview,.account-auth-card,.real-account,.purchase-card,.suite-card{
+  background:linear-gradient(145deg,#191919 0%,#0b0b0b 100%)!important;
+  border:1px solid #383838!important;border-radius:22px!important;
+  box-shadow:0 22px 65px rgba(0,0,0,.55),inset 0 1px rgba(255,255,255,.045)!important;
+}
+.live-overview{max-width:1180px;margin:34px auto 70px!important;padding:26px!important}
+.live-metrics{gap:12px!important}
+.live-metrics article,.real-account .account-stats article,.account-insights>article{
+  background:linear-gradient(145deg,#242424,#141414)!important;
+  border:1px solid #414141!important;border-radius:16px!important;
+}
+.metric-icon,.suite-card-icon{display:grid;place-items:center;background:#303030!important;color:#fff!important;border:1px solid #606060!important;border-radius:12px!important}
+.dashboard-preview,.purchase-wrap,.connectivity-suite{max-width:1180px!important;margin-left:auto!important;margin-right:auto!important}
+.account-auth-card{padding:clamp(22px,4vw,44px)!important;gap:clamp(22px,4vw,48px)!important}
+.auth-form{background:#090909!important;border:1px solid #454545!important;border-radius:18px!important;padding:24px!important}
+.auth-form input,.reset-form input,.purchase-card input,.purchase-card select,.purchase-card textarea{
+  background:#080808!important;border:1px solid #4a4a4a!important;border-radius:11px!important;color:#fff!important;
+}
+.auth-socials button,.auth-toggle button,.order-filter-tabs button,.service-tabs .tab{
+  background:#202020!important;border:1px solid #484848!important;color:#ddd!important;border-radius:10px!important;
+}
+.auth-toggle button.active,.order-filter-tabs button.active,.service-tabs .tab.active{
+  background:#f5f5f5!important;color:#080808!important;border-color:#fff!important;
+}
+.purchase-wrap{padding-top:54px!important;padding-bottom:60px!important}
+.purchase-heading{margin-bottom:22px!important}
+.purchase-card{padding:clamp(18px,3vw,32px)!important}
+.service-tabs{display:flex;gap:10px!important;border:0!important;margin-bottom:28px!important}
+.service-tabs .tab{padding:13px 20px!important;font-weight:750!important}
+.network-grid{gap:12px!important}
+.network{
+  min-height:70px!important;display:flex!important;align-items:center!important;gap:12px!important;
+  background:#171717!important;border:1px solid #444!important;border-radius:14px!important;
+  color:#f3f3f3!important;padding:12px 15px!important;transition:background .18s,border-color .18s,transform .18s!important;
+}
+.network:hover{background:#252525!important;border-color:#aaa!important;transform:translateY(-2px)}
+.network.selected,.network.active{background:#303030!important;border:1px solid #fff!important;color:#fff!important;box-shadow:inset 0 0 0 1px #ffffff30!important}
+.network-logo,.plan-network-mark{
+  display:grid!important;place-items:center!important;width:36px!important;height:36px!important;
+  border-radius:10px!important;background:linear-gradient(145deg,#fff,#aaa)!important;
+  border:1px solid #fff!important;color:#050505!important;font-weight:900!important;
+}
+.network-check{margin-left:auto!important;color:#fff!important}
+.field label,.plan-picker-heading label{color:#eee!important;letter-spacing:1.2px!important;font-weight:800!important}
+.field small,.purchase-heading p,.suite-heading p{color:#999!important}
+.input-wrap{background:#080808!important;border:1px solid #454545!important;border-radius:12px!important}
+.input-wrap:focus-within{border-color:#fff!important;box-shadow:0 0 0 3px #ffffff16!important}
+.plan-category-tabs{display:flex!important;gap:8px!important;flex-wrap:wrap!important}
+.plan-category-tabs button{background:#171717!important;border:1px solid #444!important;color:#bbb!important;border-radius:999px!important;padding:9px 14px!important}
+.plan-category-tabs button.active{background:#fff!important;color:#050505!important;border-color:#fff!important}
+.advanced-plan-grid{gap:12px!important}
+.advanced-plan{
+  background:linear-gradient(150deg,#242424,#111)!important;border:1px solid #454545!important;
+  border-radius:15px!important;padding:16px!important;min-height:148px!important;
+  transition:transform .18s,border-color .18s,background .18s!important;
+}
+.advanced-plan:hover{transform:translateY(-3px);border-color:#aaa!important}
+.advanced-plan.selected,.advanced-plan.active{background:linear-gradient(145deg,#333,#171717)!important;border:1px solid #fff!important;box-shadow:inset 0 0 0 1px #ffffff20!important}
+.plan-validity,.plan-name{color:#aaa!important}
+.plan-card-bottom b,.advanced-plan .plan-size{color:#fff!important}
+.price-summary{background:#252525!important;border:1px solid #555!important;border-radius:14px!important}
+.price-summary strong,.total-row strong{color:#fff!important}
+.pay-btn,.auth-submit{
+  min-height:54px!important;border-radius:12px!important;
+  background:linear-gradient(180deg,#fff,#d5d5d5)!important;color:#050505!important;
+  border:1px solid #fff!important;font-weight:850!important;letter-spacing:.2px!important;
+  box-shadow:0 10px 30px #ffffff13!important;
+}
+.pay-btn:hover,.auth-submit:hover{background:#fff!important;box-shadow:0 14px 34px #ffffff20!important;transform:translateY(-1px)}
+.suite-heading{align-items:center!important}
+.suite-orbit{background:radial-gradient(circle,#444,#111 70%)!important;border:1px solid #777!important}
+.suite-card{padding:25px!important;min-height:290px!important}
+.suite-card button,.repeat-order,.real-account .signout-btn,.account-orders-head button{
+  background:#242424!important;border:1px solid #666!important;color:#fff!important;border-radius:10px!important;
+}
+.suite-card button:hover,.repeat-order:hover,.real-account .signout-btn:hover{background:#383838!important;border-color:#fff!important}
+.footer,.site-footer{background:#070707!important;border-top:1px solid #333!important}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #fff!important;outline-offset:3px}
+@media(max-width:760px){
+ .hero{min-height:unset!important;padding:76px 20px 54px!important}
+ .hero-copy h1{font-size:clamp(42px,12vw,64px)!important}
+ .live-overview{margin:18px 14px 45px!important;padding:16px!important}
+ .dashboard-preview,.purchase-wrap,.connectivity-suite{padding-left:14px!important;padding-right:14px!important}
+ .network-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .network{min-width:0!important;padding:10px!important;font-size:13px!important}
+ .purchase-card{padding:15px!important}
+ .advanced-plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .suite-heading{gap:20px!important}
+ .suite-orbit{width:92px!important;height:92px!important;flex:0 0 92px!important}
+}
+@media(max-width:420px){
+ .network{gap:8px!important}
+ .network-logo{width:30px!important;height:30px!important}
+ .service-tabs .tab{flex:1;padding:11px 8px!important;justify-content:center!important}
+ .advanced-plan{padding:12px!important}
+}
