@@ -58,10 +58,28 @@ export default function Home() {
   const [account, setAccount] = useState<any>(null);
   const [accountBusy, setAccountBusy] = useState(false);
   const [signOutBusy, setSignOutBusy] = useState(false);
-  const [usagePeriod, setUsagePeriod] = useState<"week" | "month">("week");
-  const usageBars = usagePeriod === "week"
-    ? [{ day: "M", value: 42 }, { day: "T", value: 66 }, { day: "W", value: 54 }, { day: "T", value: 82 }, { day: "F", value: 61 }, { day: "S", value: 94 }, { day: "S", value: 48 }]
-    : [{ day: "W1", value: 48 }, { day: "W2", value: 72 }, { day: "W3", value: 56 }, { day: "W4", value: 88 }];
+  const [orderFilter, setOrderFilter] = useState<"all" | "data" | "airtime">("all");
+  const activityBars = useMemo(() => {
+    const orders = account?.orders || [];
+    const days = Array.from({ length: 7 }, (_, index) => {
+      const date = new Date();
+      date.setHours(0, 0, 0, 0);
+      date.setDate(date.getDate() - (6 - index));
+      const key = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
+      const spent = orders.filter((order: any) => {
+        const created = new Date(order.created_at);
+        const orderKey = [created.getFullYear(), String(created.getMonth() + 1).padStart(2, "0"), String(created.getDate()).padStart(2, "0")].join("-");
+        return orderKey === key;
+      }).reduce((sum: number, order: any) => sum + Number(order.total || 0), 0);
+      return { label: date.toLocaleDateString("en-NG", { weekday: "short" }), spent };
+    });
+    const max = Math.max(1, ...days.map(day => day.spent));
+    return days.map(day => ({ ...day, height: Math.max(5, Math.round(day.spent / max * 100)) }));
+  }, [account]);
+  const filteredOrders = (account?.orders || []).filter((order: any) => orderFilter === "all" || order.kind === orderFilter);
+  const trackedSpend = (account?.orders || []).reduce((sum: number, order: any) => sum + Number(order.total || 0), 0);
+  const dataSpend = (account?.orders || []).filter((order: any) => order.kind === "data").reduce((sum: number, order: any) => sum + Number(order.total || 0), 0);
+  const airtimeSpend = (account?.orders || []).filter((order: any) => order.kind === "airtime").reduce((sum: number, order: any) => sum + Number(order.total || 0), 0);
 
   const selected = networks.find(n => n.id === network)!;
   const chosen = plans.find(p => p.variation_code === plan);
@@ -171,7 +189,7 @@ export default function Home() {
     } catch (err) { setNotice(err instanceof Error ? err.message : "Something went wrong."); setLoading(false); }
   }
   return <main>
-    <header className="topbar"><a className="brand" href="#"><span className="brand-mark">S</span><span>sub<span className="brand-dot">.</span></span></a><nav className={mobileOpen ? "nav nav-open" : "nav"}><a href="#services">Services</a><a href="/subscriptions">Subscriptions</a><a href="#how">How it works</a><a href="#support">Support</a></nav><div className="header-right"><span className="secure"><ShieldCheck size={15}/> Secure checkout</span><button className="menu-btn" onClick={() => setMobileOpen(!mobileOpen)}><Menu/></button></div></header>
+    <header className="topbar"><a className="brand" href="#"><span className="brand-mark">S</span><span>sub<span className="brand-dot">.</span></span></a><nav className={mobileOpen ? "nav nav-open" : "nav"}><a href="#services" onClick={() => setMobileOpen(false)}>Buy data & airtime</a><a href="#account" onClick={() => setMobileOpen(false)}>My dashboard</a><a href="#how" onClick={() => setMobileOpen(false)}>How it works</a><a href="#support" onClick={() => setMobileOpen(false)}>Support</a></nav><div className="header-right"><span className="secure"><ShieldCheck size={15}/> Secure checkout</span><button className="menu-btn" onClick={() => setMobileOpen(!mobileOpen)}><Menu/></button></div></header>
     <section className="hero"><div className="hero-copy"><div className="eyebrow"><span className="pulse"/> SIMPLE. FAST. AFFORDABLE.</div><h1>Stay connected.<br/><span>Spend less.</span></h1><p>Instant airtime and data top-ups for every network in Nigeria. Great value, zero stress.</p><div className="hero-points"><span><CheckCircle2/> Instant delivery</span><span><CheckCircle2/> Secure payments</span></div></div><div className="hero-art"><div className="orbit orbit-one"/><div className="orbit orbit-two"/><div className="phone-card"><div className="phone-speaker"/><div className="phone-screen"><div className="screen-greeting">Good day 👋</div><div className="screen-title">Your connection,<br/>your way.</div><div className="screen-balance"><small>QUICK TOP-UP</small><strong>₦2,500</strong><span>Ready when you are</span></div><div className="screen-bars"><i/><i/><i/><i/></div></div></div><div className="float-chip chip-top"><Zap size={17}/> Instant top-up</div><div className="float-chip chip-bottom"><Wifi size={17}/> Data delivered</div></div></section>
 
     <section className="live-overview" aria-label="Platform overview">
@@ -184,7 +202,7 @@ export default function Home() {
       </div>
     </section>
 \n
-    <section className="dashboard-preview" aria-label="Customer account dashboard">
+    <section className="dashboard-preview" id="account" aria-label="Customer account dashboard">
       {!session ? <div className="account-auth-card">
         <div className="auth-copy"><div className="eyebrow">YOUR SUB ACCOUNT</div><h2>Everything connected, in one place.</h2><p>Create an account to keep your purchases together and view your real order history whenever you return.</p><div className="auth-benefit"><CheckCircle2/> Track airtime and data orders</div><div className="auth-benefit"><CheckCircle2/> See delivery and payment status</div><div className="auth-benefit"><CheckCircle2/> Keep your account private</div></div>
         <form className="auth-form" onSubmit={handleAuth}>
@@ -208,8 +226,13 @@ export default function Home() {
             <article><small>DELIVERED</small><strong>{account.stats.delivered}</strong><span>Successfully completed</span></article>
             <article><small>IN PROGRESS</small><strong>{account.stats.pending}</strong><span>Awaiting confirmation</span></article>
           </div>
-          <div className="account-orders-head"><div><h3>Recent purchases</h3><p>Your order records, loaded from your account.</p></div><button type="button" onClick={() => {setAccountBusy(true);fetch("/api/account",{headers:{Authorization:"Bearer "+session.access_token}}).then(r=>r.json()).then(setAccount).finally(()=>setAccountBusy(false));}}>Refresh</button></div>
-          {account.orders.length ? <div className="orders-list">{account.orders.slice(0,8).map((order:any) => <article key={order.reference}><span className="order-kind">{order.kind === "data" ? <Wifi size={16}/> : <Smartphone size={16}/>}</span><div className="order-description"><strong>{order.network.toUpperCase()} {order.kind === "data" ? "Data" : "Airtime"}</strong><small>{order.plan_name || order.phone} · {new Date(order.created_at).toLocaleDateString("en-NG")}</small></div><b>{money(Number(order.total))}</b><em className={"order-status " + order.status}>{order.status.replaceAll("_"," ")}</em></article>)}</div> : <div className="empty-orders">No purchases yet. Your completed and pending orders will appear here.</div>}
+          <div className="account-insights">
+            <article className="insight-spend"><div className="insight-topline"><span>RECENT SPEND</span><span>LAST 30 ORDERS</span></div><strong>{money(trackedSpend)}</strong><p>Tracked purchases on this account</p><div className="spend-split"><span><i className="spend-dot data-dot"/> Data <b>{money(dataSpend)}</b></span><span><i className="spend-dot airtime-dot"/> Airtime <b>{money(airtimeSpend)}</b></span></div></article>
+            <article className="insight-chart"><div className="insight-topline"><span>7-DAY ACTIVITY</span><span>FROM YOUR ORDERS</span></div><div className="activity-bars">{activityBars.map((day,index)=><div className="activity-day" key={day.label+index}><div className="activity-track"><i style={{height:day.height+"%"}} title={money(day.spent)}/></div><small>{day.label}</small></div>)}</div><p>Daily purchase value · {money(activityBars.reduce((sum,day)=>sum+day.spent,0))} this week</p></article>
+          </div>
+          <div className="account-orders-head"><div><h3>Purchase management</h3><p>Review, filter and repeat your recent top-ups.</p></div><button type="button" onClick={() => {setAccountBusy(true);fetch("/api/account",{headers:{Authorization:"Bearer "+session.access_token}}).then(async r=>{const d=await r.json();if(!r.ok)throw new Error(d.error||"Refresh failed");setAccount(d);}).catch(e=>setAuthNotice(e.message)).finally(()=>setAccountBusy(false));}}>Refresh activity</button></div>
+          <div className="order-filter-tabs" role="group" aria-label="Filter purchase history">{([{id:"all",label:"All activity"},{id:"data",label:"Data"},{id:"airtime",label:"Airtime"}] as {id:"all"|"data"|"airtime";label:string}[]).map(item=><button type="button" key={item.id} className={orderFilter===item.id?"active":""} onClick={()=>setOrderFilter(item.id)}>{item.label}<span>{item.id==="all"?(account.orders||[]).length:(account.orders||[]).filter((order:any)=>order.kind===item.id).length}</span></button>)}</div>
+          {filteredOrders.length ? <div className="orders-list">{filteredOrders.slice(0,12).map((order:any) => <article key={order.reference}><span className="order-kind">{order.kind === "data" ? <Wifi size={16}/> : <Smartphone size={16}/>}</span><div className="order-description"><strong>{order.network.toUpperCase()} {order.kind === "data" ? "Data" : "Airtime"}</strong><small>{order.plan_name || order.phone} · {new Date(order.created_at).toLocaleDateString("en-NG")}</small></div><b>{money(Number(order.total))}</b><em className={"order-status " + order.status}>{order.status.replaceAll("_"," ")}</em><button type="button" className="repeat-order" onClick={()=>{setKind(order.kind==="data"?"data":"airtime");setNetwork(order.network);setPhone(order.phone);setEmail(session.user?.email||"");if(order.kind==="airtime")setAmount(String(order.amount||100));setPlanCategoryFilter("all");document.getElementById("services")?.scrollIntoView({behavior:"smooth",block:"start"});}}>Buy again <ArrowUpRight size={13}/></button></article>)}</div> : <div className="empty-orders">No {orderFilter==="all"?"purchases":orderFilter+" purchases"} yet. Your top-ups will appear here after checkout.</div>}
           <div className="usage-unavailable"><Gauge size={18}/><div><strong>Live network data balance</strong><span>Your order history is connected. Remaining MB/GB requires a supported network usage API; it is not available from the current VTPass setup.</span></div></div>
         </> : <div className="account-loading">Your account activity could not be loaded. Please refresh.</div>}
       </div>}
@@ -225,13 +248,12 @@ export default function Home() {
       {notice && <div className="notice">{notice}</div>}<button className="pay-btn" type="submit" disabled={loading || (kind === "data" && !plans.length)}>{loading ? "Preparing secure payment…" : <>Continue to payment <ArrowUpRight size={18}/></>}</button><div className="payment-note"><ShieldCheck size={15}/> Payments are processed securely by Paystack</div></form>
     </div></section>
 
-    <section className="more-services" aria-label="More services">
-      <div className="more-services-heading"><div><div className="eyebrow">MORE FROM SUB</div><h2>More ways to stay sorted.</h2><p>Your everyday digital services, in one simple place.</p></div><span>MORE SERVICES <b>COMING SOON</b></span></div>
-      <div className="more-services-grid">
-        <article><i>▣</i><div><b>Streaming & TV subscriptions</b><small>Manage Netflix, Spotify, YouTube Premium, DStv and more.</small></div><a className="service-link" href="/subscriptions">Explore</a></article>
-        <article><i>ϟ</i><div><b>Electricity bills</b><small>Pay prepaid and postpaid electricity bills.</small></div><em>Coming soon</em></article>
-        <article><i>▤</i><div><b>Education pins</b><small>Get exam and learning service pins.</small></div><em>Coming soon</em></article>
-        <article><i>◷</i><div><b>Order tracking</b><small>Check payment and delivery progress.</small></div><em>Use receipt link</em></article>
+    <section className="connectivity-suite" aria-label="Data and airtime management">
+      <div className="suite-heading"><div><div className="eyebrow">YOUR CONNECTIVITY TOOLKIT</div><h2>Everything essential.<br/><span>Nothing extra.</span></h2><p>Manage the two things that keep you connected, with one account and a clear purchase history.</p></div><div className="suite-orbit"><span>SUB</span><i/><i/><i/></div></div>
+      <div className="suite-cards">
+        <article className="suite-card suite-data"><div className="suite-card-icon"><Wifi size={22}/></div><small>DATA MANAGEMENT</small><h3>Find your next bundle.</h3><p>Compare network bundles by validity, size and price. Filter daily, weekly and monthly options.</p><button type="button" onClick={()=>{setKind("data");document.getElementById("services")?.scrollIntoView({behavior:"smooth",block:"start"});}}>Explore data plans <ArrowUpRight size={16}/></button></article>
+        <article className="suite-card suite-airtime"><div className="suite-card-icon"><Smartphone size={22}/></div><small>AIRTIME MANAGEMENT</small><h3>Top up in seconds.</h3><p>Choose your network, set an amount and securely recharge any supported Nigerian number.</p><button type="button" onClick={()=>{setKind("airtime");document.getElementById("services")?.scrollIntoView({behavior:"smooth",block:"start"});}}>Buy airtime <ArrowUpRight size={16}/></button></article>
+        <article className="suite-card suite-history"><div className="suite-card-icon"><Activity size={22}/></div><small>ACCOUNT CONTROL</small><h3>Your activity, organised.</h3><p>Review purchases, see delivery status, filter by service and repeat a previous top-up.</p><button type="button" onClick={()=>document.getElementById("account")?.scrollIntoView({behavior:"smooth",block:"start"})}>Open dashboard <ArrowUpRight size={16}/></button></article>
       </div>
     </section>
 \n    <section className="benefits" id="how"><div className="eyebrow">WHY SUB?</div><h2>Small steps. Big convenience.</h2><div className="benefit-grid"><article><span className="benefit-icon"><Zap/></span><h3>Fast delivery</h3><p>Your airtime or data is processed automatically after payment confirmation.</p></article><article><span className="benefit-icon"><CreditCard/></span><h3>Clear pricing</h3><p>See the full price before you pay. No hidden charges at checkout.</p></article><article><span className="benefit-icon"><ShieldCheck/></span><h3>Protected payments</h3><p>Payment verification happens securely on our server before any top-up.</p></article></div></section>
