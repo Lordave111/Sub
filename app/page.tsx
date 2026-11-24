@@ -1,272 +1,281 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
-import { Activity, Apple, ArrowUpRight, CheckCircle2, CreditCard, Eye, EyeOff, Gauge, Menu, ShieldCheck, Smartphone, TrendingUp, Wallet, Wifi, Zap } from "lucide-react";
 
-type Plan = { variation_code: string; name: string; variation_amount: string; fixedPrice: string };
-type ServiceKind = "data" | "airtime" | "electricity";
-const discos = [{id:"ibadan-electric",name:"IBEDC — Ibadan",region:"Oyo, Ogun, Osun, Kwara"},{id:"ikeja-electric",name:"IKEDC — Ikeja",region:"Lagos"},{id:"eko-electric",name:"EKEDC — Eko",region:"Lagos"},{id:"abuja-electric",name:"AEDC — Abuja",region:"FCT and environs"},{id:"jos-electric",name:"JED — Jos",region:"Plateau and environs"},{id:"kaduna-electric",name:"KAEDCO — Kaduna",region:"Kaduna and environs"},{id:"kano-electric",name:"KEDCO — Kano",region:"Kano and environs"},{id:"portharcourt-electric",name:"PHED — Port Harcourt",region:"Rivers and environs"},{id:"enugu-electric",name:"EEDC — Enugu",region:"South-East"},{id:"benin-electric",name:"BEDC — Benin",region:"Edo and environs"}];
-const networks = [
-  { id: "mtn", name: "MTN", color: "#ffca05", text: "#171717", service: "mtn-data", airtime: "mtn" },
-  { id: "airtel", name: "Airtel", color: "#e31b36", text: "#fff", service: "airtel-data", airtime: "airtel" },
-  { id: "glo", name: "Glo", color: "#159447", text: "#fff", service: "glo-data", airtime: "glo" },
-  { id: "9mobile", name: "9mobile", color: "#087b48", text: "#fff", service: "9mobile-data", airtime: "etisalat" },
-];
-const money = (n: number) => "₦" + n.toLocaleString("en-NG");
-const planSize = (name: string) => name.match(/\d+(?:\.\d+)?\s?(?:MB|GB|TB)/i)?.[0] || "DATA BUNDLE";
-const planValidity = (name: string) => name.match(/\d+\s?(?:hours?|days?|weeks?|months?)/i)?.[0] || "Provider validity";
-type PlanCategory = "all" | "daily" | "weekly" | "monthly" | "other";
-const planCategory = (name: string): PlanCategory => {
-  const value = name.toLowerCase();
-  if (/\b(daily|24\s?hours?|1\s?day)\b/.test(value)) return "daily";
-  if (/\b(weekly|7\s?days?|14\s?days?)\b/.test(value)) return "weekly";
-  if (/\b(monthly|30\s?days?|1\s?month|2\s?months?)\b/.test(value)) return "monthly";
-  const days = value.match(/(\d+)\s?days?/);
-  if (days) {
-    const count = Number(days[1]);
-    if (count <= 2) return "daily";
-    if (count <= 14) return "weekly";
-    if (count <= 31) return "monthly";
-  }
-  return "other";
+import { useMemo, useState } from "react";
+import {
+  Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, BadgeCheck, Bell,
+  Building2, Check, ChevronDown, ChevronRight, CircleHelp, Clock3, Copy,
+  ExternalLink, Eye, FileSearch, Fingerprint, Globe2, LayoutDashboard, Link2,
+  LockKeyhole, Menu, MessageCircle, Plus, Search, Send, Settings, Shield,
+  ShieldAlert, ShieldCheck, Smartphone, Sparkles, Target, Users, WalletCards,
+  X, Zap
+} from "lucide-react";
+
+type ScanResult = {
+  score: number;
+  level: "low" | "medium" | "high";
+  verdict: string;
+  summary: string;
+  signals: { title: string; detail: string; severity: "high" | "medium" | "low" }[];
+  recommendations: string[];
+  checkedAt: string;
 };
-export default function Home() {
-  const [kind, setKind] = useState<ServiceKind>("data");
-  const [disco, setDisco] = useState("ibadan-electric");
-  const [meterNumber, setMeterNumber] = useState("");
-  const [meterCustomer, setMeterCustomer] = useState("");
-  const [meterVerified, setMeterVerified] = useState(false);
-  const [meterBusy, setMeterBusy] = useState(false);
-  const [network, setNetwork] = useState("mtn");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [amount, setAmount] = useState("100");
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [plan, setPlan] = useState("");
-  const [planCategoryFilter, setPlanCategoryFilter] = useState<PlanCategory>("all");
-  const [plansExpanded, setPlansExpanded] = useState(false);
-  const [commissionPercent] = useState(10);
-  const [loading, setLoading] = useState(false);
-  const [notice, setNotice] = useState("");
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [supabaseClient] = useState(() => {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    return url && key ? createClient(url, key) : null;
-  });
-  const [session, setSession] = useState<any>(null);
-  const [authMode, setAuthMode] = useState<"login" | "signup" | "forgot">("signup");
-  const [showPassword, setShowPassword] = useState(false);
-  const [authNeedsResend, setAuthNeedsResend] = useState(false);
-  const [authEmail, setAuthEmail] = useState("");
-  const [authPassword, setAuthPassword] = useState("");
-  const [authBusy, setAuthBusy] = useState(false);
-  const [authNotice, setAuthNotice] = useState("");
-  const [account, setAccount] = useState<any>(null);
-  const [accountBusy, setAccountBusy] = useState(false);
-  const [signOutBusy, setSignOutBusy] = useState(false);
-  const [orderFilter, setOrderFilter] = useState<"all" | "data" | "airtime" | "electricity">("all");
-  const activityBars = useMemo(() => {
-    const orders = account?.orders || [];
-    const days = Array.from({ length: 7 }, (_, index) => {
-      const date = new Date();
-      date.setHours(0, 0, 0, 0);
-      date.setDate(date.getDate() - (6 - index));
-      const key = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
-      const spent = orders.filter((order: any) => {
-        const created = new Date(order.created_at);
-        const orderKey = [created.getFullYear(), String(created.getMonth() + 1).padStart(2, "0"), String(created.getDate()).padStart(2, "0")].join("-");
-        return orderKey === key;
-      }).reduce((sum: number, order: any) => sum + Number(order.total || 0), 0);
-      return { label: date.toLocaleDateString("en-NG", { weekday: "short" }), spent };
-    });
-    const max = Math.max(1, ...days.map(day => day.spent));
-    return days.map(day => ({ ...day, height: Math.max(5, Math.round(day.spent / max * 100)) }));
-  }, [account]);
-  const filteredOrders = (account?.orders || []).filter((order: any) => orderFilter === "all" || order.kind === orderFilter);
-  const trackedSpend = (account?.orders || []).reduce((sum: number, order: any) => sum + Number(order.total || 0), 0);
-  const dataSpend = (account?.orders || []).filter((order: any) => order.kind === "data").reduce((sum: number, order: any) => sum + Number(order.total || 0), 0);
-  const airtimeSpend = (account?.orders || []).filter((order: any) => order.kind === "airtime").reduce((sum: number, order: any) => sum + Number(order.total || 0), 0);
 
-  const selected = networks.find(n => n.id === network)!;
-  const chosen = plans.find(p => p.variation_code === plan);
-  const filteredPlans = useMemo(() => plans.filter(p => planCategoryFilter === "all" || planCategory(p.name) === planCategoryFilter), [plans, planCategoryFilter]);
-  const basePrice = kind === "airtime" || kind === "electricity" ? Number(amount) : Number(chosen?.variation_amount || 0);
-  const serviceFee = useMemo(() => basePrice ? Math.round(basePrice * commissionPercent) / 100 : 0, [basePrice, commissionPercent]);
-  const total = useMemo(() => basePrice ? Math.round((basePrice + serviceFee) * 100) / 100 : 0, [basePrice, serviceFee]);
-  useEffect(() => {
-    if (!supabaseClient) return;
-    supabaseClient.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession);
-      setAccount(null);
-    });
-    return () => subscription.unsubscribe();
-  }, [supabaseClient]);
-  useEffect(() => {
-    if (!session?.access_token) { setAccount(null); return; }
-    setAccountBusy(true);
-    fetch("/api/account", { headers: { Authorization: "Bearer " + session.access_token } })
-      .then(async response => { const data = await response.json(); if (!response.ok) throw new Error(data.error || "Could not load account."); setAccount(data); })
-      .catch(error => setAuthNotice(error instanceof Error ? error.message : "Could not load account."))
-      .finally(() => setAccountBusy(false));
-  }, [session]);
-  async function handleAuth(e: React.FormEvent) {
-    e.preventDefault(); setAuthNotice(""); setAuthNeedsResend(false);
-    if (!supabaseClient) { setAuthNotice("Supabase is not connected. Check your public URL and publishable key in Vercel."); return; }
-    setAuthBusy(true);
+const navGroups = [
+  { label: "WORKSPACE", items: [
+    { id: "overview", label: "Overview", icon: LayoutDashboard },
+    { id: "scanner", label: "Scam scanner", icon: FileSearch, tag: "AI" },
+    { id: "reports", label: "Threat reports", icon: ShieldAlert },
+  ]},
+  { label: "PROTECTION", items: [
+    { id: "connections", label: "Connected accounts", icon: Link2 },
+    { id: "business", label: "Business security", icon: Building2 },
+    { id: "activity", label: "Security activity", icon: Activity },
+  ]},
+];
+
+const demoThreats = [
+  { title: "Guaranteed 40% weekly returns", channel: "Investment message", level: "High risk", time: "12 min ago", color: "red" },
+  { title: "Look-alike delivery payment page", channel: "Suspicious URL", level: "Review", time: "1 hr ago", color: "amber" },
+  { title: "Urgent account verification request", channel: "Message analysis", level: "Caution", time: "Yesterday", color: "amber" },
+];
+
+export default function Home() {
+  const [active, setActive] = useState("overview");
+  const [mobileNav, setMobileNav] = useState(false);
+  const [scanInput, setScanInput] = useState("");
+  const [scanType, setScanType] = useState<"message" | "link" | "investment">("message");
+  const [scanning, setScanning] = useState(false);
+  const [result, setResult] = useState<ScanResult | null>(null);
+  const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [reportText, setReportText] = useState("");
+  const [reportNotice, setReportNotice] = useState("");
+  const [businessMode, setBusinessMode] = useState(false);
+
+  const pageTitle = useMemo(() => {
+    const titles: Record<string, string> = {
+      overview: "Security overview", scanner: "Scam scanner", reports: "Threat intelligence",
+      connections: "Connected accounts", business: "Business protection", activity: "Security activity"
+    };
+    return titles[active] || "Security overview";
+  }, [active]);
+
+  async function runScan(event: React.FormEvent) {
+    event.preventDefault();
+    setError("");
+    setResult(null);
+    if (scanInput.trim().length < 8) {
+      setError("Paste a longer message or a complete link so FraudGuard can inspect it.");
+      return;
+    }
+    setScanning(true);
     try {
-      if (authMode === "forgot") {
-        const { error } = await supabaseClient.auth.resetPasswordForEmail(authEmail, {
-          redirectTo: window.location.origin + "/auth/reset-password",
-        });
-        if (error) throw error;
-        setAuthNotice("If an account exists for this email, a password reset link is on its way. Check your inbox and spam folder.");
-      } else if (authMode === "signup") {
-        const { data, error } = await supabaseClient.auth.signUp({ email: authEmail, password: authPassword, options: { emailRedirectTo: window.location.origin + "/auth/callback" } });
-        if (error) throw error;
-        setEmail(authEmail);
-        setAuthNotice(data.session ? "Your account is ready. Welcome to Sub!" : "Account created. Check your email to confirm your address, then sign in.");
-      } else {
-        const { error } = await supabaseClient.auth.signInWithPassword({ email: authEmail, password: authPassword });
-        if (error) throw error;
-        setEmail(authEmail);
-        setAuthNotice("Welcome back.");
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Authentication failed.";
-      setAuthNotice(message);
-      if (/email not confirmed/i.test(message)) setAuthNeedsResend(true);
-    } finally { setAuthBusy(false); }
-  }
-  async function signInWithProvider(provider: "google" | "apple") {
-    if (!supabaseClient) { setAuthNotice("Supabase is not connected. Check your public URL and publishable key in Vercel."); return; }
-    setAuthNotice(""); setAuthBusy(true);
-    const { error } = await supabaseClient.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: window.location.origin + "/auth/callback" },
-    });
-    if (error) { setAuthNotice(error.message); setAuthBusy(false); }
-  }
-  async function resendConfirmation() {
-    if (!supabaseClient || !authEmail) return;
-    setAuthBusy(true); setAuthNotice("");
-    const { error } = await supabaseClient.auth.resend({ type: "signup", email: authEmail, options: { emailRedirectTo: window.location.origin + "/auth/callback" } });
-    setAuthNotice(error ? error.message : "A new confirmation email has been sent. Check your inbox and spam folder.");
-    setAuthBusy(false);
-  }
-  async function signOut() {
-    if (!supabaseClient || signOutBusy) return;
-    setSignOutBusy(true);
-    setAuthNotice("");
-    try {
-      const { error } = await supabaseClient.auth.signOut({ scope: "local" });
-      if (error) throw error;
-      setAccount(null);
-      setSession(null);
-      setAuthEmail("");
-      setAuthPassword("");
-      setAuthMode("login");
-      setAuthNotice("You have signed out successfully.");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (error) {
-      setAuthNotice(error instanceof Error ? error.message : "Could not sign out. Please try again.");
+      const response = await fetch("/api/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: scanInput.trim(), type: scanType }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "The scan could not be completed.");
+      setResult(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "The scan could not be completed.");
     } finally {
-      setSignOutBusy(false);
+      setScanning(false);
     }
   }
-  useEffect(() => {
-    if (kind !== "data") return;
-    setPlans([]); setPlan("");
-    fetch("/api/plans?network=" + network).then(r => r.json()).then(d => { if (Array.isArray(d.plans)) { setPlans(d.plans); if (d.plans[0]) setPlan(d.plans[0].variation_code); } }).catch(() => {});
-  }, [network, kind]);
-  async function checkout(e: React.FormEvent) {
-    e.preventDefault(); setNotice("");
-    if (!/^0[789][01]\d{8}$/.test(phone.replace(/\s/g, ""))) return setNotice("Enter a valid 11-digit Nigerian phone number.");
-    if (!email.includes("@")) return setNotice("Enter a valid email address for your receipt.");
-    if (kind === "data" && !chosen) return setNotice("Choose a data plan first.");
-    if (kind === "airtime" && (basePrice < 50 || basePrice > 50000)) return setNotice("Airtime must be between ₦50 and ₦50,000.");
-    if (kind === "electricity" && (!meterVerified || !/^\d{8,13}$/.test(meterNumber))) return setNotice("Verify your prepaid meter number before continuing.");
-    if (kind === "electricity" && basePrice < 1000) return setNotice("Electricity purchase must be at least ₦1,000.");
-    if (!session?.access_token) return setNotice("Please sign in or create an account before purchasing.");
-    setLoading(true);
-    try {
-      const res = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token }, body: JSON.stringify({ kind, network, disco, meterNumber, phone: phone.replace(/\s/g, ""), email, amount: basePrice, variationCode: chosen?.variation_code, planName: chosen?.name, commissionPercent }) });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not start payment.");
-      window.location.href = data.authorizationUrl;
-    } catch (err) { setNotice(err instanceof Error ? err.message : "Something went wrong."); setLoading(false); }
+
+  async function copyResult() {
+    if (!result) return;
+    const text = [
+      "FraudGuard scan",
+      "Risk: " + result.level.toUpperCase() + " (" + result.score + "/100)",
+      result.verdict,
+      result.summary,
+      ...result.signals.map((signal) => "- " + signal.title + ": " + signal.detail),
+      "This is an automated assessment, not proof of fraud."
+    ].join("\n");
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
   }
-  return <main>
-    <header className="topbar"><a className="brand" href="#"><span className="brand-mark">S</span><span>sub<span className="brand-dot">.</span></span></a><nav className={mobileOpen ? "nav nav-open" : "nav"}><a href="#services" onClick={() => setMobileOpen(false)}>Buy data & airtime</a><a href="#account" onClick={() => setMobileOpen(false)}>My dashboard</a><a href="#how" onClick={() => setMobileOpen(false)}>How it works</a><a href="#support" onClick={() => setMobileOpen(false)}>Support</a></nav><div className="header-right"><span className="secure"><ShieldCheck size={15}/> Secure checkout</span><button className="menu-btn" onClick={() => setMobileOpen(!mobileOpen)}><Menu/></button></div></header>
-    <section className="hero"><div className="hero-copy"><div className="eyebrow"><span className="pulse"/> SUB CONNECTIVITY LAB <span className="hero-status">SYSTEM ONLINE</span></div><h1>Your network.<br/><span>Under control.</span></h1><p>A precision-built control room for Nigerian data, airtime and prepaid electricity. Explore bundles, buy power tokens and keep every purchase organised.</p><div className="hero-points"><span><CheckCircle2/> Four major networks</span><span><CheckCircle2/> Protected checkout</span></div></div><div className="hero-art"><div className="orbit orbit-one"/><div className="orbit orbit-two"/><div className="phone-card"><div className="phone-speaker"/><div className="phone-screen"><div className="screen-greeting">Good day 👋</div><div className="screen-title">Your connection,<br/>your way.</div><div className="screen-balance"><small>QUICK TOP-UP</small><strong>₦2,500</strong><span>Ready when you are</span></div><div className="screen-bars"><i/><i/><i/><i/></div></div></div><div className="float-chip chip-top"><Zap size={17}/> Instant top-up</div><div className="float-chip chip-bottom"><Wifi size={17}/> Data delivered</div></div></section>
 
-    <section className="live-overview" aria-label="Platform overview">
-      <div className="live-overview-head"><div><span className="live-ping"/> LIVE NETWORK MATRIX <b>4 networks supported</b></div><span>NIGERIA // CONNECTIVITY</span></div>
-      <div className="live-metrics">
-        <article><span className="metric-icon">◉</span><small>NETWORKS</small><strong>4</strong><em>MTN · Airtel · Glo · 9mobile</em></article>
-        <article><span className="metric-icon">▤</span><small>DATA BUNDLES</small><strong>{plans.length || "—"}</strong><em>{plans.length ? "Plans loaded from provider" : "Live provider catalogue"}</em></article>
-        <article><span className="metric-icon">↗</span><small>DELIVERY</small><strong>24/7</strong><em>Automated after payment</em></article>
-        <article><span className="metric-icon">♧</span><small>PAYMENTS</small><strong>Secure</strong><em>Paystack checkout</em></article>
-      </div>
-    </section>
-\n
-    <section className="dashboard-preview" id="account" aria-label="Customer account dashboard">
-      {!session ? <div className="account-auth-card">
-        <div className="auth-copy"><div className="eyebrow">YOUR SUB ACCOUNT</div><h2>Everything connected, in one place.</h2><p>Create an account to keep your purchases together and view your real order history whenever you return.</p><div className="auth-benefit"><CheckCircle2/> Track airtime and data orders</div><div className="auth-benefit"><CheckCircle2/> See delivery and payment status</div><div className="auth-benefit"><CheckCircle2/> Keep your account private</div></div>
-        <form className="auth-form" onSubmit={handleAuth}>
-          <div className="auth-form-heading"><span className="auth-kicker">WELCOME TO SUB</span><h3>{authMode === "signup" ? "Create your account" : authMode === "forgot" ? "Reset your password" : "Good to see you again"}</h3><p>{authMode === "signup" ? "One account for every top-up and order." : authMode === "forgot" ? "We’ll email you a secure link to choose a new password." : "Sign in to continue to your Sub dashboard."}</p></div>
-          <div className="auth-toggle"><button type="button" className={authMode === "signup" ? "active" : ""} onClick={() => {setAuthMode("signup");setAuthNotice("");setAuthNeedsResend(false);}}>Create account</button><button type="button" className={authMode !== "signup" ? "active" : ""} onClick={() => {setAuthMode("login");setAuthNotice("");setAuthNeedsResend(false);}}>Sign in</button></div>
-          <label htmlFor="account-email">EMAIL ADDRESS</label><input id="account-email" type="email" autoComplete="email" placeholder="you@example.com" value={authEmail} onChange={e => setAuthEmail(e.target.value)} required/>
-          {authMode !== "forgot" && <><div className="auth-password-label"><label htmlFor="account-password">PASSWORD</label>{authMode === "login" && <button type="button" onClick={() => {setAuthMode("forgot");setAuthNotice("");}}>Forgot password?</button>}</div><div className="auth-password-field"><input id="account-password" type={showPassword ? "text" : "password"} autoComplete={authMode === "signup" ? "new-password" : "current-password"} minLength={6} placeholder="At least 6 characters" value={authPassword} onChange={e => setAuthPassword(e.target.value)} required/><button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(value => !value)}>{showPassword ? <EyeOff size={17}/> : <Eye size={17}/>}</button></div></>}
-          {authMode === "forgot" && <button type="button" className="auth-back-link" onClick={() => {setAuthMode("login");setAuthNotice("");}}>← Back to sign in</button>}
-          {authNotice && <p className="auth-notice">{authNotice}</p>}
-          {authNeedsResend && <button type="button" className="auth-resend" disabled={authBusy} onClick={resendConfirmation}>Resend confirmation email</button>}
-          <button className="auth-submit" disabled={authBusy || !supabaseClient}>{authBusy ? "Please wait…" : authMode === "signup" ? "Create my account" : authMode === "forgot" ? "Send reset link" : "Sign in securely"} <ArrowUpRight size={16}/></button>
-          {authMode !== "forgot" && <><div className="auth-divider"><span>OR CONTINUE WITH</span></div><div className="auth-socials"><button type="button" disabled={authBusy || !supabaseClient} onClick={() => signInWithProvider("google")}><span className="google-g">G</span><span>Google</span></button><button type="button" disabled={authBusy || !supabaseClient} onClick={() => signInWithProvider("apple")}><Apple size={18}/><span>Apple</span></button></div><p className="auth-legal">Protected with encrypted authentication. By continuing, you agree to Sub’s terms and privacy policy.</p></>}
-          {!supabaseClient && <small className="auth-config-hint">Add the Supabase URL and public publishable key in Vercel to activate account access.</small>}
-        </form>
-      </div> : <div className="real-account">
-        <div className="account-title"><div><div className="eyebrow">CUSTOMER DASHBOARD</div><h2>Welcome back.</h2><p>{session.user?.email}</p></div><button type="button" onClick={signOut} className="signout-btn" disabled={signOutBusy || !supabaseClient} aria-live="polite">{signOutBusy ? <><span className="signout-spinner" /> Signing out…</> : "Sign out"}</button></div>
-        {accountBusy ? <div className="account-loading">Loading your account activity…</div> : account ? <>
-          <div className="account-stats">
-            <article className="account-wallet"><small>WALLET LEDGER</small><strong>{money(Number(account.walletBalance || 0))}</strong><span>Wallet funding is not enabled yet</span></article>
-            <article><small>TOTAL PURCHASES</small><strong>{account.stats.totalOrders}</strong><span>Orders on this account</span></article>
-            <article><small>DELIVERED</small><strong>{account.stats.delivered}</strong><span>Successfully completed</span></article>
-            <article><small>IN PROGRESS</small><strong>{account.stats.pending}</strong><span>Awaiting confirmation</span></article>
+  function submitReport(event: React.FormEvent) {
+    event.preventDefault();
+    if (reportText.trim().length < 12) {
+      setReportNotice("Please add a little more detail before submitting.");
+      return;
+    }
+    setReportNotice("Your report is ready. Sign-in and secure report storage will be enabled in the next integration stage. No report has been uploaded.");
+  }
+
+  function navigate(id: string) {
+    setActive(id);
+    setMobileNav(false);
+  }
+
+  return (
+    <main className="app-shell">
+      {mobileNav && <button className="mobile-scrim" aria-label="Close navigation" onClick={() => setMobileNav(false)} />}
+      <aside className={mobileNav ? "sidebar sidebar-open" : "sidebar"}>
+        <a className="brand" href="#" onClick={() => navigate("overview")}>
+          <span className="brand-mark"><ShieldCheck size={21} strokeWidth={2.4}/></span>
+          <span className="brand-name">Fraud<span>Guard</span><small>SECURITY INTELLIGENCE</small></span>
+        </a>
+        <div className="workspace-switch">
+          <span className="workspace-icon"><Fingerprint size={17}/></span>
+          <span><b>Personal workspace</b><small>Free protection plan</small></span>
+          <ChevronDown size={15}/>
+        </div>
+        <nav className="side-nav">
+          {navGroups.map((group) => <div className="nav-group" key={group.label}>
+            <p className="nav-caption">{group.label}</p>
+            {group.items.map((item) => {
+              const Icon = item.icon;
+              return <button key={item.id} className={active === item.id ? "nav-item active" : "nav-item"} onClick={() => navigate(item.id)}>
+                <Icon size={18}/><span>{item.label}</span>{item.tag && <em>{item.tag}</em>}
+              </button>;
+            })}
+          </div>)}
+        </nav>
+        <div className="sidebar-spacer"/>
+        <div className="help-card">
+          <div className="help-icon"><CircleHelp size={18}/></div>
+          <b>Need a hand?</b>
+          <p>Learn how to spot suspicious activity and protect your accounts.</p>
+          <a href="#safety-guide">Explore safety guide <ArrowUpRight size={14}/></a>
+        </div>
+        <div className="profile-row">
+          <div className="avatar">FG</div>
+          <div><b>Guest account</b><small>Preview workspace</small></div>
+          <Settings size={17}/>
+        </div>
+      </aside>
+
+      <section className="main-area">
+        <header className="topbar">
+          <button className="mobile-menu" onClick={() => setMobileNav(true)} aria-label="Open navigation"><Menu/></button>
+          <div className="breadcrumbs"><span>Workspace</span><ChevronRight size={14}/><b>{pageTitle}</b></div>
+          <div className="top-actions">
+            <span className="system-status"><i/> Protection engine online</span>
+            <button className="icon-button" aria-label="Notifications"><Bell size={18}/><i/></button>
+            <div className="top-avatar">FG</div>
           </div>
-          <div className="account-insights">
-            <article className="insight-spend"><div className="insight-topline"><span>RECENT SPEND</span><span>LAST 30 ORDERS</span></div><strong>{money(trackedSpend)}</strong><p>Tracked purchases on this account</p><div className="spend-split"><span><i className="spend-dot data-dot"/> Data <b>{money(dataSpend)}</b></span><span><i className="spend-dot airtime-dot"/> Airtime <b>{money(airtimeSpend)}</b></span></div></article>
-            <article className="insight-chart"><div className="insight-topline"><span>7-DAY ACTIVITY</span><span>FROM YOUR ORDERS</span></div><div className="activity-bars">{activityBars.map((day,index)=><div className="activity-day" key={day.label+index}><div className="activity-track"><i style={{height:day.height+"%"}} title={money(day.spent)}/></div><small>{day.label}</small></div>)}</div><p>Daily purchase value · {money(activityBars.reduce((sum,day)=>sum+day.spent,0))} this week</p></article>
-          </div>
-          <div className="account-orders-head"><div><h3>Purchase management</h3><p>Review, filter and repeat your recent top-ups.</p></div><button type="button" onClick={() => {setAccountBusy(true);fetch("/api/account",{headers:{Authorization:"Bearer "+session.access_token}}).then(async r=>{const d=await r.json();if(!r.ok)throw new Error(d.error||"Refresh failed");setAccount(d);}).catch(e=>setAuthNotice(e.message)).finally(()=>setAccountBusy(false));}}>Refresh activity</button></div>
-          <div className="order-filter-tabs" role="group" aria-label="Filter purchase history">{([{id:"all",label:"All activity"},{id:"data",label:"Data"},{id:"airtime",label:"Airtime"},{id:"electricity",label:"Electricity"}] as {id:"all"|"data"|"airtime"|"electricity";label:string}[]).map(item=><button type="button" key={item.id} className={orderFilter===item.id?"active":""} onClick={()=>setOrderFilter(item.id)}>{item.label}<span>{item.id==="all"?(account.orders||[]).length:(account.orders||[]).filter((order:any)=>order.kind===item.id).length}</span></button>)}</div>
-          {filteredOrders.length ? <div className="orders-list">{filteredOrders.slice(0,12).map((order:any) => <article key={order.reference}><span className="order-kind">{order.kind === "data" ? <Wifi size={16}/> : order.kind === "electricity" ? <Zap size={16}/> : <Smartphone size={16}/>}</span><div className="order-description"><strong>{order.kind === "electricity" ? "Prepaid Electricity · " + (discos.find(d=>d.id===order.network)?.name || order.network) : order.network.toUpperCase() + (order.kind === "data" ? " Data" : " Airtime")}</strong><small>{order.kind === "electricity" ? "Meter " + (order.billers_code || "—") : (order.plan_name || order.phone)} · {new Date(order.created_at).toLocaleDateString("en-NG")}</small></div><b>{money(Number(order.total))}</b><em className={"order-status " + order.status}>{order.status.replaceAll("_"," ")}</em><button type="button" className="repeat-order" onClick={()=>{setKind(order.kind==="electricity"?"electricity":order.kind==="data"?"data":"airtime");if(order.kind==="electricity"){setDisco(order.network);setMeterNumber(order.billers_code||"");setMeterVerified(false);setMeterCustomer("");setAmount(String(order.amount||2000));}else{setNetwork(order.network);if(order.kind==="airtime")setAmount(String(order.amount||100));}setPhone(order.phone);setEmail(session.user?.email||"");setPlanCategoryFilter("all");document.getElementById("services")?.scrollIntoView({behavior:"smooth",block:"start"});}}>Buy again <ArrowUpRight size={13}/></button></article>)}</div> : <div className="empty-orders">No {orderFilter==="all"?"purchases":orderFilter+" purchases"} yet. Your top-ups will appear here after checkout.</div>}
-          <div className="usage-unavailable"><Gauge size={18}/><div><strong>Live network data balance</strong><span>Your order history is connected. Remaining MB/GB requires a supported network usage API; it is not available from the current VTPass setup.</span></div></div>
-        </> : <div className="account-loading">Your account activity could not be loaded. Please refresh.</div>}
-      </div>}
-    </section>
+        </header>
 
-    <section className="purchase-wrap" id="services"><div className="purchase-heading"><div><div className="eyebrow">QUICK PURCHASE</div><h2>What do you need today?</h2><p>Choose a service and we’ll handle the rest.</p></div><div className="trust-mini"><ShieldCheck/> Safe & secure</div></div>
-    <div className="purchase-card"><div className="service-tabs"><button className={kind === "data" ? "tab active" : "tab"} onClick={() => setKind("data")}><Wifi/> Buy data</button><button className={kind === "airtime" ? "tab active" : "tab"} onClick={() => setKind("airtime")}><Smartphone/> Airtime</button><button className={kind === "electricity" ? "tab active" : "tab"} onClick={() => {setKind("electricity");setMeterVerified(false);setMeterCustomer("");setAmount("2000");}}><Zap/> Prepaid electricity</button></div>
-      <form onSubmit={checkout}><div className="form-grid">{kind !== "electricity" && <div className="field full"><label>SELECT NETWORK</label><div className="network-grid">{networks.map(n => <button type="button" key={n.id} className={network === n.id ? "network selected" : "network"} style={{ borderColor: network === n.id ? n.color : undefined, backgroundColor: network === n.id ? `${n.color}14` : undefined }} onClick={() => setNetwork(n.id)}><span className={`network-logo network-logo-${n.id}`}><img src={`/logos/${n.id}.svg`} alt={`${n.name} logo`} /></span><span>{n.name}</span>{network === n.id && <CheckCircle2 className="network-check" style={{ color: n.color }}/>}</button>)}</div></div>}
-      {kind === "electricity" && <div className="field full electricity-fields"><label htmlFor="disco">ELECTRICITY DISTRIBUTION COMPANY</label><div className="select-wrap"><select id="disco" value={disco} onChange={e => {setDisco(e.target.value);setMeterVerified(false);setMeterCustomer("");}}>{discos.map(d => <option key={d.id} value={d.id}>{d.name} · {d.region}</option>)}</select></div><label htmlFor="meter">PREPAID METER NUMBER</label><div className="input-wrap"><Zap/><input id="meter" inputMode="numeric" placeholder="Enter your meter number" value={meterNumber} onChange={e => {setMeterNumber(e.target.value.replace(/\D/g,"").slice(0,13));setMeterVerified(false);setMeterCustomer("");}} maxLength={13}/><button type="button" className="verify-meter-btn" disabled={meterBusy || meterNumber.length < 8} onClick={async()=>{setMeterBusy(true);setNotice("");setMeterVerified(false);try{const r=await fetch("/api/electricity/verify",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({disco,meterNumber})});const d=await r.json();if(!r.ok)throw new Error(d.error||"Meter verification failed.");setMeterCustomer(d.customerName||"Verified customer");setMeterVerified(true);}catch(e){setNotice(e instanceof Error?e.message:"Could not verify meter.");}finally{setMeterBusy(false);}}}>{meterBusy?"Checking…":"Verify meter"}</button></div>{meterVerified && <div className="meter-verified"><CheckCircle2 size={16}/> Meter verified · {meterCustomer}</div>}<small>We verify the meter and account name before accepting payment.</small></div>}
-      <div className="field"><label htmlFor="phone">PHONE NUMBER</label><div className="input-wrap"><Smartphone/><input id="phone" inputMode="numeric" placeholder="08012345678" maxLength={11} value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g,""))} required/></div><small>Enter the number to receive your {kind}.</small></div>
-      {kind === "data" ? <div className="field full"><div className="plan-picker-heading"><label>CHOOSE YOUR DATA PLAN</label><span>{plans.length ? plans.length + " live bundles" : "Loading live bundles"}</span></div><div className="plan-category-tabs" role="group" aria-label="Filter data plans">{([{id:"all",label:"All plans"},{id:"daily",label:"Daily"},{id:"weekly",label:"Weekly"},{id:"monthly",label:"Monthly"},{id:"other",label:"Other"}] as {id:PlanCategory;label:string}[]).map(category => <button type="button" key={category.id} className={planCategoryFilter === category.id ? "active" : ""} onClick={() => { setPlansExpanded(false); setPlanCategoryFilter(category.id); const firstMatch = plans.find(p => category.id === "all" || planCategory(p.name) === category.id); setPlan(firstMatch?.variation_code || ""); }}>{category.label}<small>{category.id === "all" ? plans.length : plans.filter(p => planCategory(p.name) === category.id).length}</small></button>)}</div><div className="advanced-plan-grid">{filteredPlans.map((p, index) => { const selectedPlan = plan === p.variation_code; const rawPrice = Number(p.variation_amount); const customerPrice = Math.round(rawPrice * (1 + commissionPercent / 100) * 100) / 100; return <button type="button" key={p.variation_code} className={"advanced-plan " + (selectedPlan ? "selected" : "") + (index >= 4 && !plansExpanded ? " mobile-plan-hidden" : "")} onClick={() => setPlan(p.variation_code)} aria-pressed={selectedPlan}><span className="plan-card-top"><span className="plan-network-mark">{selected.name === "9mobile" ? "9" : selected.name.slice(0,1)}</span><span className="plan-validity">{planValidity(p.name)}</span>{selectedPlan && <CheckCircle2 size={17}/>}</span><strong className="plan-size">{planSize(p.name)}</strong><span className="plan-name">{p.name}</span><span className="plan-card-bottom"><span><small>YOU PAY</small><b>{money(customerPrice)}</b></span></span></button>; })}{!plans.length && <div className="plans-empty">Loading provider bundles. If this takes too long, check your VTpass API settings.</div>}{plans.length > 0 && !filteredPlans.length && <div className="plans-empty">No bundles found in this category for {selected.name}. Choose another category to see more plans.</div>}</div>{filteredPlans.length > 4 && <button type="button" className="plans-see-more" onClick={() => setPlansExpanded(value => !value)}>{plansExpanded ? "Show less" : `See more (${filteredPlans.length - 4} more)`}<span>{plansExpanded ? "⌃" : "⌄"}</span></button>}<small>Live bundles from the provider. The displayed price is the amount you pay.</small></div> : <div className="field"><label htmlFor="amount">{kind === "electricity" ? "ELECTRICITY AMOUNT" : "AIRTIME AMOUNT"}</label><div className="input-wrap"><span className="naira">₦</span><input id="amount" type="number" min={kind === "electricity" ? "1000" : "50"} max="50000" value={amount} onChange={e => setAmount(e.target.value)} required/></div><small>{kind === "electricity" ? "Minimum ₦1,000 · Prepaid token" : "Minimum ₦50 · Maximum ₦50,000"}</small></div>}
-      <div className="field full"><label htmlFor="email">EMAIL ADDRESS</label><div className="input-wrap"><span className="mail-icon">✉</span><input id="email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required/></div><small>Your payment receipt and order updates will be sent here.</small></div></div>
-      <div className="price-summary"><div className="total-row"><span>Total to pay</span><strong>{total ? money(total) : "—"}</strong></div></div>
-      {notice && <div className="notice">{notice}</div>}<button className="pay-btn" type="submit" disabled={loading || (kind === "data" && !plans.length)}>{loading ? "Preparing secure payment…" : <>Continue to payment <ArrowUpRight size={18}/></>}</button><div className="payment-note"><ShieldCheck size={15}/> Payments are processed securely by Paystack</div></form>
-    </div></section>
+        <div className="page-content">
+          {active === "overview" && <>
+            <div className="welcome-row">
+              <div><div className="eyebrow"><span/> YOUR DIGITAL SAFETY, IN ONE PLACE</div><h1>Stay one step ahead.</h1><p>Spot suspicious messages, links and money-making schemes before they cost you.</p></div>
+              <button className="primary-button" onClick={() => navigate("scanner")}><Sparkles size={17}/> Scan something <ArrowUpRight size={16}/></button>
+            </div>
+            <section className="hero-panel">
+              <div className="hero-copy">
+                <div className="hero-kicker"><Shield size={14}/> FRAUDGUARD PROTECTION</div>
+                <h2>Think before you<br/><span>click, pay or share.</span></h2>
+                <p>Check a message, website or investment pitch with a guided risk assessment. Get clear warning signs and practical next steps.</p>
+                <button className="hero-button" onClick={() => navigate("scanner")}>Open scam scanner <ArrowUpRight size={16}/></button>
+                <div className="hero-footnote"><LockKeyhole size={13}/> Your scan text is processed for this check and is not saved by this demo.</div>
+              </div>
+              <div className="shield-art" aria-hidden="true">
+                <div className="shield-orbit orbit-a"/><div className="shield-orbit orbit-b"/>
+                <div className="shield-glow"><ShieldCheck size={82} strokeWidth={1.2}/></div>
+                <span className="orbit-dot dot-a"/><span className="orbit-dot dot-b"/><span className="orbit-dot dot-c"/>
+                <div className="floating-signal signal-one"><span><Check size={13}/></span> Link inspection</div>
+                <div className="floating-signal signal-two"><span><Activity size={13}/></span> Threat analysis</div>
+              </div>
+            </section>
+            <div className="section-heading"><div><h3>Protection at a glance</h3><p>Your workspace status and available tools</p></div><span className="demo-label">PREVIEW DATA</span></div>
+            <div className="stats-grid">
+              <article className="stat-card"><div className="stat-top"><span>SCANS RUN</span><span className="stat-icon violet"><FileSearch size={17}/></span></div><strong>—</strong><small>No scans recorded yet</small></article>
+              <article className="stat-card"><div className="stat-top"><span>THREATS FLAGGED</span><span className="stat-icon red"><ShieldAlert size={17}/></span></div><strong>—</strong><small>Run your first scan to begin</small></article>
+              <article className="stat-card"><div className="stat-top"><span>CONNECTED ACCOUNTS</span><span className="stat-icon blue"><Link2 size={17}/></span></div><strong>0</strong><small>Connect supported services</small></article>
+              <article className="stat-card"><div className="stat-top"><span>PROTECTION STATUS</span><span className="stat-icon green"><BadgeCheck size={17}/></span></div><strong className="status-word">Ready</strong><small>Manual scanning is available</small></article>
+            </div>
+            <div className="content-grid">
+              <section className="surface-card">
+                <div className="card-heading"><div><h3>Recent threat patterns</h3><p>Examples of common scam tactics</p></div><button className="text-button" onClick={() => navigate("reports")}>View intelligence <ArrowUpRight size={14}/></button></div>
+                <div className="threat-list">{demoThreats.map((threat) => <div className="threat-row" key={threat.title}><span className={"threat-symbol " + threat.color}><AlertTriangle size={16}/></span><div className="threat-info"><b>{threat.title}</b><small>{threat.channel}</small></div><span className={"risk-pill " + threat.color}>{threat.level}</span><time>{threat.time}</time></div>)}</div>
+                <p className="sample-note">Illustrative examples only — not live reports or verified incidents.</p>
+              </section>
+              <section className="surface-card quick-card">
+                <div className="card-heading"><div><h3>Quick safety check</h3><p>Choose what you want to inspect</p></div></div>
+                <button className="quick-action" onClick={() => { setScanType("message"); navigate("scanner"); }}><span className="quick-icon purple"><MessageCircle size={18}/></span><span><b>Suspicious message</b><small>WhatsApp, SMS or DM</small></span><ChevronRight size={17}/></button>
+                <button className="quick-action" onClick={() => { setScanType("link"); navigate("scanner"); }}><span className="quick-icon blue"><Globe2 size={18}/></span><span><b>Website or link</b><small>Check for phishing signals</small></span><ChevronRight size={17}/></button>
+                <button className="quick-action" onClick={() => { setScanType("investment"); navigate("scanner"); }}><span className="quick-icon orange"><WalletCards size={18}/></span><span><b>Investment offer</b><small>Review return promises</small></span><ChevronRight size={17}/></button>
+              </section>
+            </div>
+            <section className="bottom-banner" id="safety-guide"><div className="banner-icon"><Users size={20}/></div><div><b>Protection works better when everyone stays alert.</b><p>Never share your OTP, PIN, password or recovery code — even with someone claiming to be support.</p></div><a href="https://www.cbn.gov.ng/" target="_blank" rel="noreferrer">Security resources <ExternalLink size={14}/></a></section>
+          </>}
 
-    <section className="connectivity-suite" aria-label="Data and airtime management">
-      <div className="suite-heading"><div><div className="eyebrow">YOUR CONNECTIVITY TOOLKIT</div><h2>Everything essential.<br/><span>Nothing extra.</span></h2><p>Manage data, airtime and electricity with one account and a clear purchase history.</p></div><div className="suite-orbit"><span>SUB</span><i/><i/><i/></div></div>
-      <div className="suite-cards">
-        <article className="suite-card suite-data"><div className="suite-card-icon"><Wifi size={22}/></div><small>DATA MANAGEMENT</small><h3>Find your next bundle.</h3><p>Compare network bundles by validity, size and price. Filter daily, weekly and monthly options.</p><button type="button" onClick={()=>{setKind("data");document.getElementById("services")?.scrollIntoView({behavior:"smooth",block:"start"});}}>Explore data plans <ArrowUpRight size={16}/></button></article>
-        <article className="suite-card suite-airtime"><div className="suite-card-icon"><Smartphone size={22}/></div><small>AIRTIME MANAGEMENT</small><h3>Top up in seconds.</h3><p>Choose your network, set an amount and securely recharge any supported Nigerian number.</p><button type="button" onClick={()=>{setKind("airtime");document.getElementById("services")?.scrollIntoView({behavior:"smooth",block:"start"});}}>Buy airtime <ArrowUpRight size={16}/></button></article>\n        <article className="suite-card suite-electricity"><div className="suite-card-icon"><Zap size={22}/></div><small>PREPAID ELECTRICITY</small><h3>Power your home.</h3><p>Verify your prepaid meter, buy electricity and receive your token after payment.</p><button type="button" onClick={()=>{setKind("electricity");setMeterVerified(false);setMeterCustomer("");setAmount("2000");document.getElementById("services")?.scrollIntoView({behavior:"smooth",block:"start"});}}>Buy electricity <ArrowUpRight size={16}/></button></article>
-        <article className="suite-card suite-history"><div className="suite-card-icon"><Activity size={22}/></div><small>ACCOUNT CONTROL</small><h3>Your activity, organised.</h3><p>Review purchases, see delivery status, filter by service and repeat a previous top-up.</p><button type="button" onClick={()=>document.getElementById("account")?.scrollIntoView({behavior:"smooth",block:"start"})}>Open dashboard <ArrowUpRight size={16}/></button></article>
-      </div>
-    </section>
-\n    <section className="benefits" id="how"><div className="eyebrow">WHY SUB?</div><h2>Small steps. Big convenience.</h2><div className="benefit-grid"><article><span className="benefit-icon"><Zap/></span><h3>Fast delivery</h3><p>Your airtime or data is processed automatically after payment confirmation.</p></article><article><span className="benefit-icon"><CreditCard/></span><h3>Clear pricing</h3><p>See the full price before you pay. No hidden charges at checkout.</p></article><article><span className="benefit-icon"><ShieldCheck/></span><h3>Protected payments</h3><p>Payment verification happens securely on our server before any top-up.</p></article></div></section>
-    <footer id="support"><a className="brand" href="#"><span className="brand-mark">S</span><span>sub<span className="brand-dot">.</span></span></a><span>Simple, affordable connectivity for everyone.</span><a href="mailto:support@example.com">Need help? Contact support <ArrowUpRight size={14}/></a><small>© {new Date().getFullYear()} Sub. All rights reserved.</small></footer>
-    </main>;
+          {active === "scanner" && <>
+            <div className="page-intro"><div className="eyebrow"><span/> MANUAL THREAT ANALYSIS</div><h1>Check before you trust.</h1><p>Paste a suspicious message, website link or investment pitch. FraudGuard will explain the warning signs it can detect.</p></div>
+            <div className="scanner-layout">
+              <section className="surface-card scanner-card">
+                <div className="card-heading"><div><h3>New security scan</h3><p>Choose a scan type and add the content below</p></div><span className="secure-tag"><LockKeyhole size={13}/> Private check</span></div>
+                <div className="scan-tabs">
+                  <button className={scanType === "message" ? "scan-tab selected" : "scan-tab"} onClick={() => setScanType("message")}><MessageCircle size={16}/> Message</button>
+                  <button className={scanType === "link" ? "scan-tab selected" : "scan-tab"} onClick={() => setScanType("link")}><Globe2 size={16}/> Website link</button>
+                  <button className={scanType === "investment" ? "scan-tab selected" : "scan-tab"} onClick={() => setScanType("investment")}><WalletCards size={16}/> Investment</button>
+                </div>
+                <form onSubmit={runScan}>
+                  <label className="field-label" htmlFor="scan-content">{scanType === "link" ? "PASTE THE WEBSITE URL" : scanType === "investment" ? "PASTE THE INVESTMENT OFFER" : "PASTE THE MESSAGE OR CHAT"}</label>
+                  <textarea id="scan-content" value={scanInput} onChange={(e) => setScanInput(e.target.value)} placeholder={scanType === "link" ? "https://example.com/claim-prize" : scanType === "investment" ? "Paste the investment offer, promised returns, payment details..." : "Paste the suspicious WhatsApp message, SMS or social media DM here..."} rows={8}/>
+                  <div className="input-meta"><span>{scanInput.length} characters</span><span><LockKeyhole size={12}/> Not stored in this preview</span></div>
+                  {error && <p className="form-error">{error}</p>}
+                  <button className="primary-button scan-submit" type="submit" disabled={scanning}>{scanning ? <><span className="spinner"/> Checking signals...</> : <><Search size={17}/> Analyse content <ArrowUpRight size={16}/></>}</button>
+                </form>
+                <div className="privacy-note"><ShieldCheck size={16}/><span><b>Privacy first.</b> This preview processes the text you submit and does not save it to a user account.</span></div>
+              </section>
+              <aside className="surface-card scanner-aside">
+                <div className="aside-icon"><Sparkles size={20}/></div><h3>What gets checked?</h3>
+                <ul><li><Check size={15}/> Pressure, urgency and threats</li><li><Check size={15}/> Requests for OTPs or secret codes</li><li><Check size={15}/> Guaranteed or unrealistic returns</li><li><Check size={15}/> Suspicious URL structure</li><li><Check size={15}/> Upfront fees and impersonation clues</li></ul>
+                <div className="disclaimer-box"><AlertTriangle size={16}/><p>This is an early rule-based scanner, not a guarantee. A low score does not prove something is safe.</p></div>
+              </aside>
+            </div>
+            {result && <section className="surface-card result-card">
+              <div className="result-head"><div><div className="eyebrow"><span/> SCAN COMPLETE</div><h2>Assessment results</h2></div><button className="secondary-button" onClick={copyResult}><Copy size={15}/>{copied ? "Copied" : "Copy report"}</button></div>
+              <div className="result-summary">
+                <div className={"score-ring " + result.level}><strong>{result.score}</strong><small>/100</small></div>
+                <div className="result-copy"><span className={"risk-pill " + result.level}>{result.level.toUpperCase()} RISK INDICATORS</span><h3>{result.verdict}</h3><p>{result.summary}</p></div>
+              </div>
+              <div className="result-columns"><div><h4>Signals detected</h4>{result.signals.length ? result.signals.map((signal, index) => <div className="signal-row" key={index}><span className={"signal-dot " + signal.severity}/><div><b>{signal.title}</b><p>{signal.detail}</p></div></div>) : <p className="muted-copy">No obvious indicators were found by these basic checks.</p>}</div><div><h4>Recommended next steps</h4>{result.recommendations.map((tip, index) => <div className="recommendation" key={index}><Check size={15}/><span>{tip}</span></div>)}</div></div>
+              <p className="result-footnote">Checked {new Date(result.checkedAt).toLocaleString()} · Automated screening can miss scams and produce false positives. Verify independently before sending money or sharing information.</p>
+            </section>}
+          </>}
+
+          {active === "reports" && <>
+            <div className="page-intro"><div className="eyebrow"><span/> COMMUNITY DEFENCE</div><h1>Threat intelligence.</h1><p>Document suspicious activity and learn the patterns criminals use. Reports shown here are sample content until secure submissions are connected.</p></div>
+            <div className="content-grid reports-grid">
+              <section className="surface-card"><div className="card-heading"><div><h3>Common fraud patterns</h3><p>Examples to help you recognise red flags</p></div><span className="demo-label">SAMPLE LIBRARY</span></div>
+                {demoThreats.map((t, i) => <div className="intel-card" key={t.title}><div className="intel-top"><span className={"risk-pill " + t.color}>{t.level}</span><small>Pattern 0{i+1}</small></div><h4>{t.title}</h4><p>{["Promises of fixed, unusually high returns with pressure to recruit others.","Look-alike websites that imitate delivery firms and demand small release fees.","Messages claiming an account will be blocked unless a code is shared immediately."][i]}</p></div>)}
+              </section>
+              <section className="surface-card report-form-card"><div className="card-heading"><div><h3>Prepare a report</h3><p>Do not include passwords, PINs or OTPs</p></div></div><form onSubmit={submitReport}><label className="field-label" htmlFor="report-detail">WHAT HAPPENED?</label><textarea id="report-detail" rows={6} value={reportText} onChange={(e) => setReportText(e.target.value)} placeholder="Describe the suspicious message, account, website or offer..."/><button className="primary-button" type="submit"><Send size={16}/> Prepare report</button>{reportNotice && <p className="form-hint">{reportNotice}</p>}</form><div className="disclaimer-box"><Shield size={16}/><p>Reports will need moderation and evidence checks before they can appear publicly. Never publish private personal information.</p></div></section>
+            </div>
+          </>}
+
+          {active === "connections" && <>
+            <div className="page-intro"><div className="eyebrow"><span/> ACCOUNT INTEGRATIONS</div><h1>Your apps. Your permission.</h1><p>Connect supported business services through official authorization. Personal message access is not silently enabled.</p></div>
+            <div className="integration-grid">
+              {[{name:"WhatsApp Business",desc:"Receive business messages through the official WhatsApp Business Platform webhook.",icon:MessageCircle,kind:"WhatsApp",status:"Setup required"},{name:"Facebook Pages",desc:"Review supported Page events using Meta permissions and app review.",icon:Users,kind:"Meta",status:"Setup required"},{name:"Instagram Professional",desc:"Connect eligible professional accounts through Meta's approved APIs.",icon:Smartphone,kind:"Meta",status:"Setup required"},{name:"Telegram",desc:"Add a FraudGuard bot to chats where users choose to send suspicious content.",icon:Send,kind:"Telegram",status:"Planned"}].map((item) => {const Icon = item.icon;return <article className="surface-card integration-card" key={item.name}><div className="integration-top"><span className="integration-icon"><Icon size={22}/></span><span className="setup-pill">{item.status}</span></div><h3>{item.name}</h3><p>{item.desc}</p><button className="secondary-button" disabled>{item.status === "Planned" ? "Coming later" : "Configure integration"} <LockKeyhole size={14}/></button></article>})}
+            </div>
+            <div className="integration-note"><LockKeyhole size={18}/><div><b>No password collection. No hidden access.</b><p>FraudGuard will use official OAuth, approved API scopes and revocable permissions. Integration buttons remain disabled until provider credentials, callback URLs and compliance reviews are configured.</p></div></div>
+          </>}
+
+          {active === "business" && <>
+            <div className="page-intro"><div className="eyebrow"><span/> ORGANISATION SECURITY</div><h1>Protect your business trust.</h1><p>Prepare a shared security workspace for staff, customer-facing channels and suspicious payment requests.</p></div>
+            <div className="business-hero surface-card"><div><span className="demo-label">BUSINESS WORKSPACE PREVIEW</span><h2>Reduce fraud exposure<br/>across your team.</h2><p>Business features will include team roles, approved reporting workflows, brand impersonation monitoring and incident records.</p><button className="primary-button" onClick={() => setBusinessMode(!businessMode)}>{businessMode ? "Hide setup checklist" : "View setup checklist"} <ArrowUpRight size={15}/></button></div><div className="business-graphic"><Building2 size={76}/><span><ShieldCheck size={22}/> TEAM PROTECTION</span></div></div>
+            {businessMode && <div className="surface-card checklist"><h3>Business launch checklist</h3>{["Create an organisation profile and verify its domain","Invite staff with role-based permissions","Configure approved Meta business integrations","Set up incident escalation contacts","Enable audit logs and retention policies"].map((item, i) => <div key={item} className="check-row"><span>{i+1}</span>{item}<small>Pending</small></div>)}</div>}
+            <div className="stats-grid business-stats"><article className="stat-card"><div className="stat-top"><span>TEAM MEMBERS</span><Users size={17}/></div><strong>—</strong><small>Organisation setup pending</small></article><article className="stat-card"><div className="stat-top"><span>PROTECTED CHANNELS</span><Link2 size={17}/></div><strong>0</strong><small>No channels connected</small></article><article className="stat-card"><div className="stat-top"><span>OPEN INCIDENTS</span><AlertTriangle size={17}/></div><strong>0</strong><small>No incident data yet</small></article></div>
+          </>}
+
+          {active === "activity" && <>
+            <div className="page-intro"><div className="eyebrow"><span/> AUDIT & MONITORING</div><h1>Security activity.</h1><p>Review scans and account events as they become available.</p></div>
+            <section className="surface-card empty-state"><div className="empty-icon"><Clock3 size={28}/></div><h3>No activity recorded</h3><p>Your scan history will appear here after account sign-in and secure history storage are implemented. This preview does not retain scan content.</p><button className="primary-button" onClick={() => navigate("scanner")}><Search size={16}/> Run a scan</button></section>
+          </>}
+          <footer className="footer"><span>© 2026 FraudGuard Security</span><span><ShieldCheck size={13}/> Built for safer digital decisions</span><a href="https://developers.facebook.com/docs/graph-api/webhooks/getting-started/" target="_blank" rel="noreferrer">Integration documentation <ExternalLink size={12}/></a></footer>
+        </div>
+      </section>
+    </main>
+  );
 }
