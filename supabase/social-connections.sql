@@ -14,7 +14,7 @@ create table if not exists public.fg_social_connections (
   updated_at timestamptz not null default now(),
   unique(user_id,provider,external_account_id)
 );
-create index if not exists fg_social_connections_user_idx on public.fg_social_connections(user_id,created_at desc);
+create index if not exists fg_social_connections_user_idx on public.fg_social_connections(user_id,connected_at desc);
 alter table public.fg_social_connections enable row level security;
 -- Deliberately no client-side SELECT/INSERT/UPDATE/DELETE policies.
 -- OAuth tokens are encrypted and only accessed through server routes using the Supabase service key.
