@@ -5,7 +5,7 @@ import { supabase } from "@/lib/server";
 export async function GET(req: NextRequest) {
   const userId = await getAuthenticatedUserId(req);
   if (!userId) return NextResponse.json({ error: "Sign in to view workspaces." }, { status: 401 });
-  const memberships = await supabase("fg_memberships?user_id=eq." + encodeURIComponent(userId) + "&select:organization_id,role,created_at");
+  const memberships = await supabase("fg_memberships?user_id=eq." + encodeURIComponent(userId) + "&select=organization_id,role,created_at");
   if (!memberships.ok) return NextResponse.json({ error: "Apply the FraudGuard database migration first." }, { status: 503 });
   const rows = await memberships.json();
   const ids = rows.map((row: { organization_id: string }) => row.organization_id);
