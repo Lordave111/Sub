@@ -1,41 +1,49 @@
-# Sub — Nigerian Airtime & Data VTU
+# FraudGuard
 
-A Next.js storefront for MTN, Airtel, Glo and 9mobile airtime/data. Paystack handles checkout; VTpass fulfills purchases after server-side payment verification. A percentage commission is added to each purchase.
+FraudGuard is the new direction for the former Sub application: a digital-safety workspace for individuals and businesses to review suspicious messages, links and investment pitches.
 
-## Stack
-- Next.js 14 App Router (Vercel-ready)
-- Paystack transaction initialization and verification
-- VTpass service-variation lookup and purchase API
-- Supabase Postgres order ledger
+## Current implementation
 
-## Setup
-1. Create a Supabase project and run [supabase/schema.sql](supabase/schema.sql), then [supabase/account-migration.sql](supabase/account-migration.sql), in its SQL Editor.
-2. In Supabase Authentication → Providers, enable Email. Choose whether to require email confirmation.
-3. Copy `.env.example` to `.env.local` and fill in the values, including `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (the Supabase publishable/anon key).
-4. Create a VTpass sandbox account, enable API access, and add its API key, public key and secret key. VTpass POST requests use `api-key` and `secret-key`; GET requests use `api-key` and `public-key`.
-5. Create a Paystack test integration and add its secret key. Never put secret keys in frontend variables or commit them.
-6. Set `NEXT_PUBLIC_SITE_URL=http://localhost:3000`.
-6. Run `npm install` and `npm run dev`.
+- Responsive FraudGuard security dashboard and navigation.
+- Manual scam scanner for pasted messages, URLs and investment offers.
+- Server-side rule-based checks for common red flags: guaranteed returns, recruitment-based schemes, upfront fees, credential requests, urgency tactics and suspicious URL structures.
+- Clear risk explanations and practical next steps.
+- Privacy-first scan endpoint: scan content is processed in memory and is not written to a database.
+- Honest integration placeholders for WhatsApp Business, Facebook Pages, Instagram Professional and Telegram.
+- Business security workspace preview.
 
-## Vercel deployment
-Import this repository into Vercel. Framework preset: Next.js; Root Directory: `./`. Add every variable from `.env.example` in Project Settings → Environment Variables, set `NEXT_PUBLIC_SITE_URL` to your deployed URL, and redeploy. In Supabase Authentication → URL Configuration, set the Site URL to your deployed domain and add the Vercel domain to the allowed redirect URLs if you enable email confirmation.
+## Important limitations
 
-Start with `VTU_SANDBOX=true` and Paystack test keys. Test successful, pending, failed, and duplicate callback scenarios before switching to live credentials and `VTU_SANDBOX=false`.
+This is an early rule-based screening tool, not a certified security product, antivirus, fraud database or legal determination. Scores are heuristic indicators, not probabilities. A low score does not prove that a person, message, website or investment is safe. Reports, account history, live threat-intelligence feeds and social integrations are not active yet.
 
-## Commission
-The default commission is 10% of the airtime amount or data-plan provider price. Set `COMMISSION_PERCENT` on the server and `NEXT_PUBLIC_COMMISSION_PERCENT` to the same percentage for the customer-facing price display. The server calculates the final commission independently and does not trust any fee submitted by the browser. Change both values together if you adjust the percentage. The customer dashboard uses Supabase Auth and lists orders created while the customer is signed in. Existing guest orders are not automatically assigned to accounts. Wallet balance reads the wallet transaction ledger; wallet funding is not enabled yet. Live carrier data-balance/usage is not available from the current VTpass integration and is not represented with fabricated figures.
+FraudGuard will not secretly read personal messages or collect social-media passwords. Integrations must use official OAuth/API access, explicit consent, minimal scopes and revocable permissions. WhatsApp support should begin with the official WhatsApp Business Platform; it does not grant arbitrary access to personal WhatsApp chats.
 
-## Important production notes
-- Do not enable live VTpass or live Paystack keys until sandbox tests pass.
-- A successful Paystack payment is verified server-side and amount/currency are checked before VTpass is called.
-- Keep Supabase service-role and all provider secrets server-only.
-- Provider responses marked pending are recorded as pending and must be reconciled using VTpass requery before any retry; never blindly resubmit a pending purchase.
-- This is an integration starter, not yet a fully audited money-handling system.
+## Run locally
 
+```bash
+npm install
+npm run dev
+```
 
+Open http://localhost:3000.
 
-## Product scope
+## Deployment
 
-Sub is focused on Nigerian airtime and mobile data for MTN, Airtel, Glo and 9mobile. The customer dashboard provides account-linked purchase history, delivered/pending order counts, recent spending analytics, data/airtime filters, and a repeat-purchase shortcut. No streaming, cable TV, electricity, education-pin or other unrelated service catalogue is included.
+The project remains a Next.js app and can continue using the existing Vercel project. No new secrets or database credentials are required for the current manual scanner.
 
-The 7-day activity chart is calculated from the customer's latest 30 stored orders; it is purchase activity, not a carrier-reported remaining data balance. Live network usage and data balance are not available from the current VTpass setup and are not fabricated. Wallet funding is also not enabled.
+## Next engineering stages
+
+1. Add Supabase authentication, organisation accounts, role-based access and secure report storage.
+2. Add an audited threat-intelligence provider and reputation checks for domains and URLs.
+3. Add reviewed Meta OAuth and WhatsApp Business webhooks with signature verification.
+4. Add evidence uploads with malware scanning, OCR and strict retention controls.
+5. Add moderated community reports, admin review, appeals and false-positive handling.
+6. Add monitoring, rate limits, abuse controls, privacy policy, terms and incident-response procedures.
+
+## Security notes
+
+- Never store provider access tokens in browser storage.
+- Verify Meta webhook signatures and deduplicate webhook deliveries.
+- Keep API secrets server-side.
+- Apply Supabase Row Level Security before enabling user-generated reports or organisation data.
+- Avoid publicly exposing phone numbers, personal names, account identifiers or unverified accusations.
