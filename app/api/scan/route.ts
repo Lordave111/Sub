@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getAuthenticatedUserId } from "@/lib/auth";
+import { supabase } from "@/lib/server";
 
 type ScanType = "message" | "link" | "investment";
 type Signal = { title: string; detail: string; severity: "high" | "medium" | "low"; points: number };
@@ -55,6 +57,24 @@ export async function POST(request: Request) {
         signals.push({ title: "Investment requires independent verification", detail: "No automated text check can establish that an investment is licensed, solvent or legitimate. Verify the operator and regulatory status independently.", severity: "medium", points: 8 });
       }
     }
+    const extractedUrls = content.split(/\s+/).filter((part: string) => part.startsWith("http://") || part.startsWith("https://") || part.startsWith("www.")).slice(0, 5).map((part: string) => part.replace(/[),.!?]+$/, ""));
+    const intelligence: { provider: string; status: string; matches?: number }[] = [];
+    if (process.env.GOOGLE_SAFE_BROWSING_API_KEY && extractedUrls.length) {
+      try {
+        const lookup = await fetch("https://safebrowsing.googleapis.com/v4/threatMatches:find?key=" + encodeURIComponent(process.env.GOOGLE_SAFE_BROWSING_API_KEY), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ client: { clientId: "fraudguard", clientVersion: "1.0" }, threatInfo: { threatTypes: ["MALWARE","SOCIAL_ENGINEERING","UNWANTED_SOFTWARE","POTENTIALLY_HARMFUL_APPLICATION"], platformTypes: ["ANY_PLATFORM"], threatEntryTypes: ["URL"], threatEntries: extractedUrls.map((url: string) => ({ url })) } }), signal: AbortSignal.timeout(5000), cache: "no-store" });
+        if (lookup.ok) { const data = await lookup.json(); const matches = Array.isArray(data.matches) ? data.matches : []; if (matches.length) signals.push({ title: "Google Safe Browsing threat match", detail: "Google Safe Browsing reports one or more submitted URLs as known unsafe destinations.", severity: "high", points: 55 }); intelligence.push({ provider: "Google Safe Browsing", status: "checked", matches: matches.length }); }
+        else intelligence.push({ provider: "Google Safe Browsing", status: "provider_error" });
+      } catch { intelligence.push({ provider: "Google Safe Browsing", status: "unavailable" }); }
+    }
+    if (process.env.VIRUSTOTAL_API_KEY && extractedUrls.length) {
+      let checked = 0, malicious = 0, suspicious = 0;
+      for (const url of extractedUrls.slice(0, 3)) {
+        try { const id = Buffer.from(url).toString("base64").replaceAll("=", "").replaceAll("+", "-").replaceAll("/", "_"); const lookup = await fetch("https://www.virustotal.com/api/v3/urls/" + id, { headers: { "x-apikey": process.env.VIRUSTOTAL_API_KEY }, signal: AbortSignal.timeout(5000), cache: "no-store" }); if (lookup.ok) { const data = await lookup.json(); const stats = data?.data?.attributes?.last_analysis_stats || {}; checked++; malicious += Number(stats.malicious || 0); suspicious += Number(stats.suspicious || 0); } } catch { /* Provider timeouts do not block local screening. */ }
+      }
+      if (malicious) signals.push({ title: "VirusTotal engines flagged a URL", detail: malicious + " security engine(s) marked at least one URL as malicious.", severity: "high", points: 55 });
+      else if (suspicious) signals.push({ title: "VirusTotal engines reported suspicious activity", detail: suspicious + " security engine(s) reported suspicious indicators.", severity: "medium", points: 22 });
+      intelligence.push({ provider: "VirusTotal", status: checked ? "checked_existing_reports_only" : "no_existing_report_or_unavailable", matches: malicious + suspicious });
+    }
     const unique = signals.filter((signal, index, all) => all.findIndex((other) => other.title === signal.title) === index);
     const score = Math.min(100, unique.reduce((sum, signal) => sum + signal.points, 0));
     const level = score >= 45 ? "high" : score >= 20 ? "medium" : "low";
@@ -69,11 +89,10 @@ export async function POST(request: Request) {
       : level === "medium"
         ? ["Verify the sender using a separate, trusted contact method.", "Search for independent evidence and regulatory registration.", "Do not open shortened or unfamiliar links or download unexpected files."]
         : ["Check the exact domain and account identity before proceeding.", "Be cautious of any later request for money or confidential information.", "Ask someone you trust to review high-value decisions."];
-    return NextResponse.json({
-      score, level, verdict, summary,
-      signals: unique.map(({ title, detail, severity }) => ({ title, detail, severity })),
-      recommendations, checkedAt: new Date().toISOString(),
-    }, { headers: { "Cache-Control": "no-store" } });
+    const checkedAt = new Date().toISOString();
+    const userId = await getAuthenticatedUserId(request);
+    if (userId) { try { await supabase("fg_scans", { method: "POST", body: JSON.stringify({ user_id: userId, scan_type: type, risk_level: level, score, summary, signals: unique.map(({ title, detail, severity }) => ({ title, detail, severity })) }) }); } catch { /* History is optional until migration is applied. */ } }
+    return NextResponse.json({ score, level, verdict, summary, signals: unique.map(({ title, detail, severity }) => ({ title, detail, severity })), recommendations, checkedAt, intelligence: { providers: intelligence, localRules: true, note: "Enabled reputation providers receive submitted URLs for lookup." } }, { headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json({ error: "Invalid scan request." }, { status: 400 });
   }
