@@ -8,7 +8,8 @@ FraudGuard is a scam-protection workspace for individuals and organisations. It 
 - Rule-based content screening with clear risk indicators and practical safety steps.
 - Optional Google Safe Browsing URL checks and VirusTotal lookups of existing URL reports. Provider keys remain server-side.
 - Authenticated scan-history storage (summary and signals only; raw pasted message content is not stored).
-- Supabase email/password and Google OAuth sign-in page.
+- Supabase email/password and Google OAuth sign-in page, plus an authenticated personal/business portal.
+- Optional AI-assisted scam review through the OpenAI Responses API.
 - Private incident-report submission and report-history API.
 - Organisation workspace creation and membership foundation with owner role.
 - Private evidence upload endpoint (10 MB limit, allow-listed file types, report ownership check and quarantine state).
@@ -31,6 +32,7 @@ FraudGuard is a scam-protection workspace for individuals and organisations. It 
 4. In Supabase Auth, enable Email/Password and optionally Google OAuth. Add your production domain and `/auth` callback to the allowed redirect URLs.
 5. Deploy the branch or merge the pull request after reviewing the build.
 6. Optional threat intelligence:
+   - `OPENAI_API_KEY` and optionally `FRAUDGUARD_AI_MODEL` (defaults to `gpt-6.2-astra`). AI review is available from the scan results after sign-in. Submitted text is sent to OpenAI when enabled.
    - `GOOGLE_SAFE_BROWSING_API_KEY`
    - `VIRUSTOTAL_API_KEY`
    Submitted URLs are sent to enabled providers for reputation lookup. Tell users this in your privacy notice. VirusTotal integration checks existing reports only; it does not upload unknown URLs.
@@ -44,7 +46,9 @@ FraudGuard is a scam-protection workspace for individuals and organisations. It 
 
 | Route | Purpose |
 |---|---|
-| `POST /api/scan` | Rule-based scan plus optional provider lookups; stores scan metadata for authenticated users |
+| `POST /api/scan` | Rule-based scan plus optional URL reputation lookups; stores scan metadata for authenticated users |
+| `POST /api/ai-analysis` | Authenticated AI-assisted review using the OpenAI Responses API |
+| `/portal` | Personal and business account portal for reports, evidence, alerts and history |
 | `GET, POST /api/reports` | List and submit private reports |
 | `GET /api/history` | Authenticated scan history |
 | `GET, PUT /api/alerts` | Alert preferences |
@@ -59,7 +63,7 @@ Authenticated API calls use `Authorization: Bearer <Supabase access token>`.
 ## Important boundaries
 
 - The local scanner is heuristic screening, not an AI verdict, antivirus, a confirmed fraud database, or legal determination. A low score never proves safety.
-- External provider results are additional signals and can be incomplete or wrong.
+- External provider results are additional signals and can be incomplete or wrong. When enabled, AI receives submitted text and URL reputation services receive extracted URLs; disclose this clearly to users.
 - Do not paste OTPs, PINs, passwords, recovery codes or full payment credentials.
 - Reports are private by default. A report must be reviewed before it can be published as a pattern; unverified allegations must not be exposed publicly.
 - Evidence is stored in a private bucket with status `quarantined`. This repository does not yet run antivirus or content-disarm scanning, so files must not be served or trusted until a malware-scanning pipeline marks them clean.
