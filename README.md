@@ -42,12 +42,23 @@ FraudGuard is a scam-protection workspace for individuals and organisations. It 
    - `META_APP_SECRET`
    - `META_WEBHOOK_VERIFY_TOKEN`
    - `TELEGRAM_WEBHOOK_SECRET`
+10. Social account OAuth (optional):
+   - Run `supabase/social-connections.sql` in Supabase SQL Editor.
+   - Set `SOCIAL_OAUTH_STATE_SECRET` to a long random secret (32+ characters).
+   - Set `SOCIAL_TOKEN_ENCRYPTION_KEY` to a base64-encoded 32-byte key. Generate one with `openssl rand -base64 32`.
+   - For Facebook Pages and Instagram Professional, configure a Meta app and set `META_APP_ID` and `META_APP_SECRET`.
+   - For YouTube, configure a Google OAuth web client and set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
+   - Add `https://fgsafe.vercel.app/api/social/callback` (or your own domain callback) to each provider's allowed OAuth redirect URLs. `NEXT_PUBLIC_SITE_URL` must match the deployed origin.
+   - Provider app review, business verification, approved permissions and platform-specific eligibility may be required before real accounts can connect.
 9. Set `FRAUDGUARD_ADMIN_USER_IDS` to a comma-separated list of trusted Supabase auth user UUIDs to enable report moderation.
 
 ## API routes
 
 | Route | Purpose |
 |---|---|
+| `POST /api/social/connect` | Start a signed, short-lived Meta or Google OAuth flow for the signed-in user |
+| `GET /api/social/callback` | Exchange the OAuth code and store encrypted provider tokens server-side |
+| `GET, DELETE /api/social/connections` | List the signed-in user's connected accounts or remove stored credentials |
 | `POST /api/scan` | Rule-based scan plus optional URL reputation lookups; stores scan metadata for authenticated users |
 | `POST /api/ai-analysis` | Authenticated AI-assisted review using the OpenAI Responses API |
 | `GET /api/intelligence` | Public feed of moderator-approved scam patterns only |
@@ -71,6 +82,7 @@ Authenticated API calls use `Authorization: Bearer <Supabase access token>`.
 - Do not paste OTPs, PINs, passwords, recovery codes or full payment credentials.
 - Reports are private by default. A report must be reviewed before it can be published as a pattern; unverified allegations must not be exposed publicly.
 - Evidence is stored in a private bucket with status `quarantined`. This repository does not yet run antivirus or content-disarm scanning, so files must not be served or trusted until a malware-scanning pipeline marks them clean.
+- Social OAuth supports the initial Meta and Google authorization foundation. It stores access/refresh tokens encrypted server-side; it does not yet run continuous threat monitoring, fetch private DMs, or guarantee account-takeover detection. Users should also revoke app access in the provider's own settings. TikTok and X OAuth are not implemented yet.
 - Meta and Telegram webhooks validate authenticity but intentionally do not process user messages yet. OAuth consent, account mapping, webhook subscription and event handling must be completed before enabling live monitoring.
 - WhatsApp integrations use the official WhatsApp Business Platform. They do not provide covert access to personal WhatsApp chats.
 - Alert preferences are stored, but outbound email/SMS/push delivery requires a notification provider and is not yet activated.
