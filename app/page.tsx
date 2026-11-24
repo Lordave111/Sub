@@ -147,7 +147,7 @@ export default function Home() {
         </div>
         <div className="profile-row">
           <div className="avatar">FG</div>
-          <div><b>Guest account</b><small>Preview workspace</small></div>
+          <div><b>FraudGuard guest</b><small><a href="/auth">Sign in or create account</a></small></div>
           <Settings size={17}/>
         </div>
       </aside>
@@ -159,7 +159,7 @@ export default function Home() {
           <div className="top-actions">
             <span className="system-status"><i/> Protection engine online</span>
             <button className="icon-button" aria-label="Notifications"><Bell size={18}/><i/></button>
-            <div className="top-avatar">FG</div>
+            <a className="auth-nav-link" href="/auth">Sign in</a><div className="top-avatar">FG</div>
           </div>
         </header>
 
