@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { siteUrl, supabase } from "@/lib/server";
+import { supabase } from "@/lib/server";
 
 export const runtime = "nodejs";
 
