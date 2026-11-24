@@ -49,6 +49,8 @@ export default function Home() {
   const [scanType, setScanType] = useState<"message" | "link" | "investment">("message");
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
+  const [aiResult, setAiResult] = useState<any>(null);
+  const [aiBusy, setAiBusy] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [reportText, setReportText] = useState("");
@@ -111,6 +113,19 @@ export default function Home() {
       return;
     }
     setReportNotice("Your report is ready. Sign-in and secure report storage will be enabled in the next integration stage. No report has been uploaded.");
+  }
+
+  async function runAiAnalysis() {
+    const session = fraudGuardAuth ? (await fraudGuardAuth.auth.getSession()).data.session : null;
+    if (!session?.access_token) { window.location.href = "/auth"; return; }
+    setAiBusy(true); setAiResult(null);
+    try {
+      const response = await fetch("/api/ai-analysis", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token }, body: JSON.stringify({ content: scanInput.trim(), type: scanType }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "AI analysis failed.");
+      setAiResult(data);
+    } catch (err) { setError(err instanceof Error ? err.message : "AI analysis failed."); }
+    finally { setAiBusy(false); }
   }
 
   function navigate(id: string) {
@@ -238,12 +253,13 @@ export default function Home() {
               </aside>
             </div>
             {result && <section className="surface-card result-card">
-              <div className="result-head"><div><div className="eyebrow"><span/> SCAN COMPLETE</div><h2>Assessment results</h2></div><button className="secondary-button" onClick={copyResult}><Copy size={15}/>{copied ? "Copied" : "Copy report"}</button></div>
+              <div className="result-head"><div><div className="eyebrow"><span/> SCAN COMPLETE</div><h2>Assessment results</h2></div><button className="secondary-button" onClick={copyResult}><Copy size={15}/>{copied ? "Copied" : "Copy report"}</button><button className="secondary-button" onClick={runAiAnalysis} disabled={aiBusy}><Sparkles size={15}/>{aiBusy ? "AI reviewing..." : "AI review"}</button></div>
               <div className="result-summary">
                 <div className={"score-ring " + result.level}><strong>{result.score}</strong><small>/100</small></div>
                 <div className="result-copy"><span className={"risk-pill " + result.level}>{result.level.toUpperCase()} RISK INDICATORS</span><h3>{result.verdict}</h3><p>{result.summary}</p></div>
               </div>
               <div className="result-columns"><div><h4>Signals detected</h4>{result.signals.length ? result.signals.map((signal, index) => <div className="signal-row" key={index}><span className={"signal-dot " + signal.severity}/><div><b>{signal.title}</b><p>{signal.detail}</p></div></div>) : <p className="muted-copy">No obvious indicators were found by these basic checks.</p>}</div><div><h4>Recommended next steps</h4>{result.recommendations.map((tip, index) => <div className="recommendation" key={index}><Check size={15}/><span>{tip}</span></div>)}</div></div>
+              {aiResult && <div className="ai-review-panel"><div className="eyebrow"><span/> AI-ASSISTED REVIEW</div><h3>{aiResult.risk_level.toUpperCase()} RISK REVIEW</h3><p>{aiResult.summary}</p><div className="ai-review-list">{aiResult.signals.map((s: any, i: number) => <div key={i}><b>{s.title}</b><small>{s.detail}</small></div>)}</div><p className="result-footnote">{aiResult.disclaimer}</p></div>}
               <p className="result-footnote">Checked {new Date(result.checkedAt).toLocaleString()} · Automated screening can miss scams and produce false positives. Verify independently before sending money or sharing information.</p>
             </section>}
           </>}
