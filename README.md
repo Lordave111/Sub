@@ -24,24 +24,25 @@ FraudGuard is a scam-protection workspace for individuals and organisations. It 
 
 1. Create or select a Supabase project.
 2. Run `supabase/fraudguard.sql` in the Supabase SQL Editor. This creates the FraudGuard tables, row-level security policies and private evidence bucket.
-3. In Vercel, configure:
+3. Import the repository into Vercel with the project root set to the repository root. It is configured for the Next.js framework, `npm install`, and `npm run build`; use Node.js 20 or newer.
+4. In Vercel, configure:
    - `SUPABASE_URL`
    - `SUPABASE_SECRET_KEY` (or `SUPABASE_SERVICE_ROLE_KEY`) — server only; never prefix with `NEXT_PUBLIC_`.
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or the legacy anon key).
    - `NEXT_PUBLIC_SITE_URL`
-4. In Supabase Auth, enable Email/Password and optionally Google OAuth. Add your production domain and `/auth` callback to the allowed redirect URLs.
-5. Deploy the branch or merge the pull request after reviewing the build.
-6. Optional threat intelligence:
+5. In Supabase Auth, enable Email/Password and optionally Google OAuth. Add your production domain and `/auth` callback to the allowed redirect URLs.
+6. Deploy the branch for a Preview deployment first. Promote it to Production only after the Preview deployment and environment configuration are verified.
+7. Optional threat intelligence:
    - `OPENAI_API_KEY` and optionally `FRAUDGUARD_AI_MODEL` (defaults to `gpt-6.2-astra`). AI review is available from the scan results after sign-in. Submitted text is sent to OpenAI when enabled.
    - `GOOGLE_SAFE_BROWSING_API_KEY`
    - `VIRUSTOTAL_API_KEY`
    Submitted URLs are sent to enabled providers for reputation lookup. Tell users this in your privacy notice. VirusTotal integration checks existing reports only; it does not upload unknown URLs.
-7. Optional webhooks:
+8. Optional webhooks:
    - `META_APP_SECRET`
    - `META_WEBHOOK_VERIFY_TOKEN`
    - `TELEGRAM_WEBHOOK_SECRET`
-8. Set `FRAUDGUARD_ADMIN_USER_IDS` to a comma-separated list of trusted Supabase auth user UUIDs to enable report moderation.
+9. Set `FRAUDGUARD_ADMIN_USER_IDS` to a comma-separated list of trusted Supabase auth user UUIDs to enable report moderation.
 
 ## API routes
 
