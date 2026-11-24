@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import {
   Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, BadgeCheck, Bell, PlayCircle,
@@ -56,6 +56,36 @@ export default function Home() {
   const [reportText, setReportText] = useState("");
   const [reportNotice, setReportNotice] = useState("");
   const [businessMode, setBusinessMode] = useState(false);
+  const [socialConnections, setSocialConnections] = useState<any[]>([]);
+  const [socialNotice, setSocialNotice] = useState("");
+
+  useEffect(() => {
+    if (active !== "connections" || !fraudGuardAuth) return;
+    let alive = true;
+    fraudGuardAuth.auth.getSession().then(async ({ data }) => {
+      if (!data.session?.access_token) return;
+      try {
+        const response = await fetch("/api/social/connections", { headers: { Authorization: "Bearer " + data.session.access_token } });
+        const payload = await response.json();
+        if (alive && response.ok) setSocialConnections(payload.connections || []);
+        else if (alive && !response.ok) setSocialNotice(payload.error || "Could not load connected accounts.");
+      } catch { if (alive) setSocialNotice("Could not load connected accounts."); }
+    });
+    return () => { alive = false; };
+  }, [active]);
+
+  async function disconnectSocialAccount(id: string) {
+    const session = fraudGuardAuth ? (await fraudGuardAuth.auth.getSession()).data.session : null;
+    if (!session?.access_token) { window.location.href = "/auth"; return; }
+    if (!window.confirm("Remove this connection and delete its stored authorization tokens from FraudGuard?")) return;
+    try {
+      const response = await fetch("/api/social/connections", { method: "DELETE", headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token }, body: JSON.stringify({ id }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not disconnect account.");
+      setSocialConnections((items) => items.filter((item) => item.id !== id));
+      setSocialNotice("Connection removed and stored tokens deleted. You can also revoke FraudGuard in the platform's connected-app settings.");
+    } catch (error) { setSocialNotice(error instanceof Error ? error.message : "Could not disconnect account."); }
+  }
 
   const pageTitle = useMemo(() => {
     const titles: Record<string, string> = {
@@ -280,6 +310,9 @@ export default function Home() {
               <div className="social-connect-copy"><span className="secure-tag"><ShieldCheck size={14}/> PRIVATE BY DESIGN</span><h2>Your social accounts,<br/><span>under one security watch.</span></h2><p>Link eligible accounts to review available security signals, account identity and platform notifications from one place.</p><div className="social-benefits"><span><Check size={14}/> Revoke access anytime</span><span><Check size={14}/> Limited read-only permissions</span><span><Check size={14}/> No password collection</span></div></div>
               <div className="social-connect-art"><div className="social-orbit"><ShieldCheck size={58}/></div><span className="social-chip chip-a"><Globe2 size={14}/> Account checks</span><span className="social-chip chip-b"><Bell size={14}/> Threat alerts</span></div>
             </div>
+            <div className="section-heading"><div><h3>Connected accounts</h3><p>Accounts authorized for this FraudGuard profile</p></div><span className="demo-label">{socialConnections.length} CONNECTED</span></div>
+            {socialNotice && <p className="form-hint" role="status">{socialNotice}</p>}
+            <div className="connected-social-list">{socialConnections.length ? socialConnections.map((connection) => <div className="connected-social-row" key={connection.id}><span className="integration-icon"><ShieldCheck size={19}/></span><div><b>{connection.account_name}</b><small>{String(connection.provider).toUpperCase()} · Connected {new Date(connection.connected_at).toLocaleDateString()} · {connection.scopes?.length || 0} permissions</small></div><button onClick={() => disconnectSocialAccount(connection.id)}>Disconnect</button></div>) : <div className="connection-empty">No social accounts connected yet. Choose a platform below to begin.</div>}</div>
             <div className="section-heading"><div><h3>Connect your platforms</h3><p>Choose a network to begin secure authorization</p></div><span className="demo-label">OFFICIAL AUTH ONLY</span></div>
             <div className="integration-grid social-grid">
               {[{name:"Facebook Pages",desc:"Connect Pages you manage. Review supported Page identity, publishing and security signals through Meta permissions.",icon:Users,provider:"meta",status:"Connect with Meta"},{name:"Instagram Professional",desc:"Connect eligible Creator or Business profiles linked to a Facebook Page. Personal-account access is limited by Instagram APIs.",icon:Smartphone,provider:"meta",status:"Connect with Meta"},{name:"YouTube",desc:"Connect your Google account to review your own channel identity and supported channel data with read-only access.",icon:Globe2,provider:"google",status:"Connect with Google"},{name:"TikTok",desc:"TikTok account connection requires an approved TikTok developer app and the relevant product permissions.",icon:PlayCircle,provider:"tiktok",status:"Provider setup required"},{name:"X",desc:"Connect an X account after an X developer app and OAuth permissions are configured.",icon:MessageCircle,provider:"x",status:"Provider setup required"},{name:"WhatsApp Business",desc:"Connect a business number through Meta's WhatsApp Business Platform. This does not read personal WhatsApp chats.",icon:MessageCircle,provider:"meta",status:"Business setup required"}].map((item) => {const Icon = item.icon;return <article className="surface-card integration-card social-card" key={item.name}><div className="integration-top"><span className="integration-icon"><Icon size={22}/></span><span className="setup-pill">{item.status}</span></div><h3>{item.name}</h3><p>{item.desc}</p><button className="secondary-button" onClick={async()=>{if(item.provider==="tiktok"||item.provider==="x"){window.alert(item.status+" — this provider is not enabled yet.");return;}try{const session=fraudGuardAuth?(await fraudGuardAuth.auth.getSession()).data.session:null;if(!session?.access_token){window.location.href="/auth";return;}const response=await fetch("/api/social/connect",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify({provider:item.provider})});const data=await response.json();if(!response.ok)throw new Error(data.error||"Connection could not start.");window.location.href=data.authorization_url;}catch(error){window.alert(error instanceof Error?error.message:"Connection could not start.");}}}>{item.provider==="meta"||item.provider==="google"?"Connect account":"Learn about setup"} <ArrowUpRight size={14}/></button></article>})}
