@@ -159,7 +159,7 @@ export default function Home() {
           <div className="top-actions">
             <span className="system-status"><i/> Protection engine online</span>
             <button className="icon-button" aria-label="Notifications"><Bell size={18}/><i/></button>
-            <a className="auth-nav-link" href="/auth">Sign in</a><div className="top-avatar">FG</div>
+            <a className="auth-nav-link" href="/portal">My workspace</a><a className="auth-nav-link" href="/auth">Sign in</a><div className="top-avatar">FG</div>
           </div>
         </header>
 
