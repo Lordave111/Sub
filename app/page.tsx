@@ -194,7 +194,7 @@ export default function Home() {
                 <h2>Think before you<br/><span>click, pay or share.</span></h2>
                 <p>Check a message, website or investment pitch with a guided risk assessment. Get clear warning signs and practical next steps.</p>
                 <button className="hero-button" onClick={() => navigate("scanner")}>Open scam scanner <ArrowUpRight size={16}/></button>
-                <div className="hero-footnote"><LockKeyhole size={13}/> Your scan text is processed for this check and is not saved by this demo.</div>
+                <div className="hero-footnote"><LockKeyhole size={13}/> Raw scan text is not saved. Optional AI and URL reputation providers receive submitted content for analysis.</div>
               </div>
               <div className="shield-art" aria-hidden="true">
                 <div className="shield-orbit orbit-a"/><div className="shield-orbit orbit-b"/>
@@ -244,7 +244,7 @@ export default function Home() {
                   {error && <p className="form-error">{error}</p>}
                   <button className="primary-button scan-submit" type="submit" disabled={scanning}>{scanning ? <><span className="spinner"/> Checking signals...</> : <><Search size={17}/> Analyse content <ArrowUpRight size={16}/></>}</button>
                 </form>
-                <div className="privacy-note"><ShieldCheck size={16}/><span><b>Privacy first.</b> This preview processes the text you submit and does not save it to a user account.</span></div>
+                <div className="privacy-note"><ShieldCheck size={16}/><span><b>Privacy first.</b> FraudGuard does not save raw scan text. If enabled, AI analysis sends the text to OpenAI and URL reputation checks send links to the configured providers.</span></div>
               </section>
               <aside className="surface-card scanner-aside">
                 <div className="aside-icon"><Sparkles size={20}/></div><h3>What gets checked?</h3>
