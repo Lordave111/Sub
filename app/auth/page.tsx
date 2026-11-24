@@ -19,7 +19,7 @@ export default function AuthPage() {
     if (!client) { setNotice("Supabase is not configured. Add the public Supabase URL and publishable key in Vercel."); return; }
     setBusy(true);
     try {
-      const result = mode === "signup" ? await client.auth.signUp({ email,password,options:{emailRedirectTo:location.origin+"/auth"} }) : await client.auth.signInWithPassword({email,password});
+      const result = mode === "signup" ? await client.auth.signUp({ email,password,options:{emailRedirectTo:location.origin+"/portal"} }) : await client.auth.signInWithPassword({email,password});
       if (result.error) throw result.error;
       if (mode === "signup") setNotice("Account created. Check your email to confirm your address, then sign in."); else window.location.href = "/portal";
     } catch (err) { setNotice(err instanceof Error ? err.message : "Authentication failed."); }
