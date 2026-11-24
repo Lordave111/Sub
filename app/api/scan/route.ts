@@ -90,7 +90,8 @@ export async function POST(request: Request) {
         ? ["Verify the sender using a separate, trusted contact method.", "Search for independent evidence and regulatory registration.", "Do not open shortened or unfamiliar links or download unexpected files."]
         : ["Check the exact domain and account identity before proceeding.", "Be cautious of any later request for money or confidential information.", "Ask someone you trust to review high-value decisions."];
     const checkedAt = new Date().toISOString();
-    const userId = await getAuthenticatedUserId(request);
+    let userId: string | null = null;
+    try { userId = await getAuthenticatedUserId(request); } catch { /* Local scans work even before Supabase is configured. */ }
     if (userId) { try { await supabase("fg_scans", { method: "POST", body: JSON.stringify({ user_id: userId, scan_type: type, risk_level: level, score, summary, signals: unique.map(({ title, detail, severity }) => ({ title, detail, severity })) }) }); } catch { /* History is optional until migration is applied. */ } }
     return NextResponse.json({ score, level, verdict, summary, signals: unique.map(({ title, detail, severity }) => ({ title, detail, severity })), recommendations, checkedAt, intelligence: { providers: intelligence, localRules: true, note: "Enabled reputation providers receive submitted URLs for lookup." } }, { headers: { "Cache-Control": "no-store" } });
   } catch {
