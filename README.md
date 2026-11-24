@@ -10,6 +10,7 @@ FraudGuard is a scam-protection workspace for individuals and organisations. It 
 - Authenticated scan-history storage (summary and signals only; raw pasted message content is not stored).
 - Supabase email/password and Google OAuth sign-in page, plus an authenticated personal/business portal.
 - Optional AI-assisted scam review through the OpenAI Responses API.
+- Moderated community intelligence feed that exposes only reports explicitly approved for publication.
 - Private incident-report submission and report-history API.
 - Organisation workspace creation and membership foundation with owner role.
 - Private evidence upload endpoint (10 MB limit, allow-listed file types, report ownership check and quarantine state).
@@ -48,7 +49,9 @@ FraudGuard is a scam-protection workspace for individuals and organisations. It 
 |---|---|
 | `POST /api/scan` | Rule-based scan plus optional URL reputation lookups; stores scan metadata for authenticated users |
 | `POST /api/ai-analysis` | Authenticated AI-assisted review using the OpenAI Responses API |
+| `GET /api/intelligence` | Public feed of moderator-approved scam patterns only |
 | `/portal` | Personal and business account portal for reports, evidence, alerts and history |
+| `/community` | Moderated public scam-pattern library |
 | `GET, POST /api/reports` | List and submit private reports |
 | `GET /api/history` | Authenticated scan history |
 | `GET, PUT /api/alerts` | Alert preferences |
