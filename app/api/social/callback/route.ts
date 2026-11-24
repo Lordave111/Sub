@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 
 function env(name: string) {
   const value = process.env[name];
-  if (!value) throw new Error(name + " is not configured.");
+  if (!value || value.startsWith("ADD_")) throw new Error(name + " is not configured in Vercel yet. Follow the FraudGuard setup guide.");
   return value;
 }
 async function verifyState(state: string) {
