@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
 import {
   Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, BadgeCheck, Bell,
   Building2, Check, ChevronDown, ChevronRight, CircleHelp, Clock3, Copy,
@@ -9,6 +10,8 @@ import {
   ShieldAlert, ShieldCheck, Smartphone, Sparkles, Target, Users, WalletCards,
   X, Zap
 } from "lucide-react";
+
+const fraudGuardAuth = process.env.NEXT_PUBLIC_SUPABASE_URL && (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!) : null;
 
 type ScanResult = {
   score: number;
