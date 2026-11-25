@@ -26,7 +26,7 @@ type ScanResult = {
 const navGroups = [
   { label: "WORKSPACE", items: [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
-    { id: "scanner", label: "Scam scanner", icon: FileSearch, tag: "AI" },
+    { id: "scanner", label: "Chat & scam detector", icon: FileSearch, tag: "AI" },
     { id: "reports", label: "Threat reports", icon: ShieldAlert },
   ]},
   { label: "PROTECTION", items: [
@@ -89,7 +89,7 @@ export default function Home() {
 
   const pageTitle = useMemo(() => {
     const titles: Record<string, string> = {
-      overview: "Security overview", scanner: "Scam scanner", reports: "Threat intelligence",
+      overview: "Security overview", scanner: "Chat & scam detector", reports: "Threat intelligence",
       connections: "Connected accounts", business: "Business protection", activity: "Security activity"
     };
     return titles[active] || "Security overview";
@@ -258,7 +258,7 @@ export default function Home() {
           </>}
 
           {active === "scanner" && <>
-            <div className="page-intro"><div className="eyebrow"><span/> MANUAL THREAT ANALYSIS</div><h1>Check before you trust.</h1><p>Paste a suspicious message, website link or investment pitch. FraudGuard will explain the warning signs it can detect.</p></div>
+            <div className="page-intro"><div className="eyebrow"><span/> MANUAL THREAT ANALYSIS</div><h1>Check who you are chatting with.</h1><p>Paste a conversation from WhatsApp, Instagram, Facebook, SMS or another platform. FraudGuard checks the full chat for scam tactics, suspicious requests and pressure patterns.</p></div>
             <div className="scanner-layout">
               <section className="surface-card scanner-card">
                 <div className="card-heading"><div><h3>New security scan</h3><p>Choose a scan type and add the content below</p></div><span className="secure-tag"><LockKeyhole size={13}/> Private check</span></div>
@@ -269,17 +269,17 @@ export default function Home() {
                 </div>
                 <form onSubmit={runScan}>
                   <label className="field-label" htmlFor="scan-content">{scanType === "link" ? "PASTE THE WEBSITE URL" : scanType === "investment" ? "PASTE THE INVESTMENT OFFER" : "PASTE THE MESSAGE OR CHAT"}</label>
-                  <textarea id="scan-content" value={scanInput} onChange={(e) => setScanInput(e.target.value)} placeholder={scanType === "link" ? "https://example.com/claim-prize" : scanType === "investment" ? "Paste the investment offer, promised returns, payment details..." : "Paste the suspicious WhatsApp message, SMS or social media DM here..."} rows={8}/>
-                  <div className="input-meta"><span>{scanInput.length} characters</span><span><LockKeyhole size={12}/> Not stored in this preview</span></div>
+                  <textarea id="scan-content" value={scanInput} onChange={(e) => setScanInput(e.target.value)} placeholder={scanType === "link" ? "https://example.com/claim-prize" : scanType === "investment" ? "Paste the investment offer, promised returns, payment details..." : "Paste the chat conversation here. Include the sender\u2019s messages and your replies so FraudGuard can assess the context..."} rows={8}/>
+                  <div className="input-meta"><span>{scanInput.length} characters</span><span><LockKeyhole size={12}/> Raw chat text is not saved</span></div><p className="muted-copy" style={{margin:"0 0 13px"}}>Paste multiple messages in order. Remove passwords, OTPs, PINs, recovery codes and other private details first. Include timestamps or sender labels if useful.</p>
                   {error && <p className="form-error">{error}</p>}
                   <button className="primary-button scan-submit" type="submit" disabled={scanning}>{scanning ? <><span className="spinner"/> Checking signals...</> : <><Search size={17}/> Analyse content <ArrowUpRight size={16}/></>}</button>
                 </form>
                 <div className="privacy-note"><ShieldCheck size={16}/><span><b>Privacy first.</b> FraudGuard does not save raw scan text. If enabled, AI analysis sends the text to OpenAI and URL reputation checks send links to the configured providers.</span></div>
               </section>
               <aside className="surface-card scanner-aside">
-                <div className="aside-icon"><Sparkles size={20}/></div><h3>What gets checked?</h3>
-                <ul><li><Check size={15}/> Pressure, urgency and threats</li><li><Check size={15}/> Requests for OTPs or secret codes</li><li><Check size={15}/> Guaranteed or unrealistic returns</li><li><Check size={15}/> Suspicious URL structure</li><li><Check size={15}/> Upfront fees and impersonation clues</li></ul>
-                <div className="disclaimer-box"><AlertTriangle size={16}/><p>This is an early rule-based scanner, not a guarantee. A low score does not prove something is safe.</p></div>
+                <div className="aside-icon"><Sparkles size={20}/></div><h3>What gets checked in your chat?</h3>
+                <ul><li><Check size={15}/> Fake bank, support or friend identities</li><li><Check size={15}/> Requests for money, OTPs or passwords</li><li><Check size={15}/> Gift-card, crypto and advance-fee scams</li><li><Check size={15}/> Romance, job and investment manipulation</li><li><Check size={15}/> Urgency, secrecy and suspicious links</li></ul>
+                <div className="disclaimer-box"><AlertTriangle size={16}/><p>This scanner identifies warning signs, not a person\u2019s identity. A low score does not prove the sender is safe.</p></div>
               </aside>
             </div>
             {result && <section className="surface-card result-card">
