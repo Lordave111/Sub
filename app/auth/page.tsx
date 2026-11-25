@@ -1,5 +1,5 @@
 "use client";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { ShieldCheck, Mail, LockKeyhole, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -14,6 +14,7 @@ export default function AuthPage() {
   const [password,setPassword] = useState("");
   const [busy,setBusy] = useState(false);
   const [notice,setNotice] = useState("");
+  useEffect(() => { if (new URLSearchParams(window.location.search).get("mode") === "signup") setMode("signup"); }, []);
   async function submit(e: FormEvent) {
     e.preventDefault(); setNotice("");
     if (!client) { setNotice("Supabase is not configured. Add the public Supabase URL and publishable key in Vercel."); return; }
