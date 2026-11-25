@@ -58,6 +58,19 @@ export default function Home() {
   const [businessMode, setBusinessMode] = useState(false);
   const [socialConnections, setSocialConnections] = useState<any[]>([]);
   const [socialNotice, setSocialNotice] = useState("");
+  const [connectingProvider, setConnectingProvider] = useState("");
+  const [platformFilter, setPlatformFilter] = useState("all");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const connected = params.get("social_connected");
+    const error = params.get("social_error");
+    if (connected || error) {
+      setActive("connections");
+      setSocialNotice(error ? "Connection not completed: " + error : "Account authorization returned successfully. Refreshing your connected accounts.");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
 
   useEffect(() => {
     if (active !== "connections" || !fraudGuardAuth) return;
@@ -85,6 +98,27 @@ export default function Home() {
       setSocialConnections((items) => items.filter((item) => item.id !== id));
       setSocialNotice("Connection removed and stored tokens deleted. You can also revoke FraudGuard in the platform's connected-app settings.");
     } catch (error) { setSocialNotice(error instanceof Error ? error.message : "Could not disconnect account."); }
+  }
+
+  async function startSocialConnect(provider: "meta" | "google") {
+    setConnectingProvider(provider);
+    setSocialNotice("");
+    try {
+      const session = fraudGuardAuth ? (await fraudGuardAuth.auth.getSession()).data.session : null;
+      if (!session?.access_token) { window.location.href = "/auth"; return; }
+      const response = await fetch("/api/social/connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token },
+        body: JSON.stringify({ provider })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Connection could not start.");
+      window.location.href = data.authorization_url;
+    } catch (error) {
+      setSocialNotice(error instanceof Error ? error.message : "Connection could not start.");
+    } finally {
+      setConnectingProvider("");
+    }
   }
 
   const pageTitle = useMemo(() => {
@@ -305,21 +339,38 @@ export default function Home() {
           </>}
 
           {active === "connections" && <>
-            <div className="page-intro"><div className="eyebrow"><span/> SOCIAL ACCOUNT PROTECTION</div><h1>Protect every profile.</h1><p>Connect your own social accounts using the platform's secure sign-in. FraudGuard never asks for your social media password.</p></div>
+            <div className="page-intro"><div className="eyebrow"><span/> SOCIAL ACCOUNT PROTECTION</div><h1>Your security command centre.</h1><p>Connect eligible accounts, review permissions and see exactly which protection features each platform supports.</p></div>
             <div className="social-connect-hero surface-card">
-              <div className="social-connect-copy"><span className="secure-tag"><ShieldCheck size={14}/> PRIVATE BY DESIGN</span><h2>Your social accounts,<br/><span>under one security watch.</span></h2><p>Link eligible accounts to review available security signals, account identity and platform notifications from one place.</p><div className="social-benefits"><span><Check size={14}/> Revoke access anytime</span><span><Check size={14}/> Limited read-only permissions</span><span><Check size={14}/> No password collection</span></div></div>
-              <div className="social-connect-art"><div className="social-orbit"><ShieldCheck size={58}/></div><span className="social-chip chip-a"><Globe2 size={14}/> Account checks</span><span className="social-chip chip-b"><Bell size={14}/> Threat alerts</span></div>
+              <div className="social-connect-copy"><span className="secure-tag"><ShieldCheck size={14}/> PRIVATE BY DESIGN</span><h2>One place to manage<br/><span>your digital identity.</span></h2><p>Authorize each platform securely. FraudSafe never asks for your social-media password and never sends messages to your contacts.</p><div className="social-benefits"><span><Check size={14}/> Official sign-in only</span><span><Check size={14}/> Read-only where available</span><span><Check size={14}/> Revoke access anytime</span></div></div>
+              <div className="social-connect-art"><div className="social-orbit"><ShieldCheck size={58}/></div><span className="social-chip chip-a"><Activity size={14}/> Account signals</span><span className="social-chip chip-b"><Bell size={14}/> Private alerts</span></div>
             </div>
-            <div className="section-heading"><div><h3>Connected accounts</h3><p>Accounts authorized for this FraudGuard profile</p></div><span className="demo-label">{socialConnections.length} CONNECTED</span></div>
-            {socialNotice && <p className="form-hint" role="status">{socialNotice}</p>}
-            <div className="connected-social-list">{socialConnections.length ? socialConnections.map((connection) => <div className="connected-social-row" key={connection.id}><span className="integration-icon"><ShieldCheck size={19}/></span><div><b>{connection.account_name}</b><small>{String(connection.provider).toUpperCase()} · Connected {new Date(connection.connected_at).toLocaleDateString()} · {connection.scopes?.length || 0} permissions</small></div><button onClick={() => disconnectSocialAccount(connection.id)}>Disconnect</button></div>) : <div className="connection-empty">No social accounts connected yet. Choose a platform below to begin.</div>}</div>
-            <div className="section-heading"><div><h3>Connect your platforms</h3><p>Choose a network to begin secure authorization</p></div><span className="demo-label">OFFICIAL AUTH ONLY</span></div>
+            <div className="social-metrics-grid">
+              <article className="social-metric"><span className="metric-icon"><Link2 size={17}/></span><div><small>CONNECTED ACCOUNTS</small><b>{socialConnections.length}</b><em>Authorized by you</em></div></article>
+              <article className="social-metric"><span className="metric-icon"><ShieldCheck size={17}/></span><div><small>PROTECTION MODE</small><b>Read-only</b><em>No actions on your behalf</em></div></article>
+              <article className="social-metric"><span className="metric-icon"><LockKeyhole size={17}/></span><div><small>ACCESS CONTROL</small><b>Revocable</b><em>Disconnect whenever you choose</em></div></article>
+              <article className="social-metric"><span className="metric-icon"><Zap size={17}/></span><div><small>LIVE MONITORING</small><b>Setup pending</b><em>Depends on platform approvals</em></div></article>
+            </div>
+            <div className="section-heading"><div><h3>Connected identities</h3><p>Accounts currently authorized for this FraudSafe profile</p></div><span className="demo-label">{socialConnections.length} CONNECTED</span></div>
+            {socialNotice && <p className="social-status-message" role="status"><Shield size={15}/>{socialNotice}</p>}
+            <div className="connected-social-list">{socialConnections.length ? socialConnections.map((connection) => <div className="connected-social-row" key={connection.id}><span className="integration-icon"><ShieldCheck size={19}/></span><div><b>{connection.account_name}</b><small>{String(connection.provider).toUpperCase()} · Connected {new Date(connection.connected_at).toLocaleDateString()} · {connection.scopes?.length || 0} permissions</small></div><span className="connected-state"><i/> Authorized</span><button onClick={() => disconnectSocialAccount(connection.id)}>Disconnect</button></div>) : <div className="connection-empty"><Link2 size={20}/><b>No accounts connected yet</b><span>Connect your first eligible account below. You will be redirected to the platform to approve access.</span></div>}</div>
+            <div className="section-heading platform-heading"><div><h3>Platform integrations</h3><p>Choose a network and review its connection requirements</p></div><span className="demo-label">8 PLATFORMS</span></div>
+            <div className="platform-toolbar"><div className="platform-filter-label"><Search size={15}/> Filter platforms</div><div className="platform-filter">{[{id:"all",label:"All platforms"},{id:"available",label:"Connect now"},{id:"setup",label:"Setup required"}].map(f=><button key={f.id} className={platformFilter===f.id?"selected":""} onClick={()=>setPlatformFilter(f.id)}>{f.label}</button>)}</div></div>
             <div className="integration-grid social-grid">
-              {[{name:"Facebook Pages",desc:"Connect Pages you manage. Review supported Page identity, publishing and security signals through Meta permissions.",icon:Users,provider:"meta",status:"Connect with Meta"},{name:"Instagram Professional",desc:"Connect eligible Creator or Business profiles linked to a Facebook Page. Personal-account access is limited by Instagram APIs.",icon:Smartphone,provider:"meta",status:"Connect with Meta"},{name:"YouTube",desc:"Connect your Google account to review your own channel identity and supported channel data with read-only access.",icon:Globe2,provider:"google",status:"Connect with Google"},{name:"TikTok",desc:"TikTok account connection requires an approved TikTok developer app and the relevant product permissions.",icon:PlayCircle,provider:"tiktok",status:"Provider setup required"},{name:"X",desc:"Connect an X account after an X developer app and OAuth permissions are configured.",icon:MessageCircle,provider:"x",status:"Provider setup required"},{name:"WhatsApp Business",desc:"Connect a business number through Meta's WhatsApp Business Platform. This does not read personal WhatsApp chats.",icon:MessageCircle,provider:"meta",status:"Business setup required"}].map((item) => {const Icon = item.icon;return <article className="surface-card integration-card social-card" key={item.name}><div className="integration-top"><span className="integration-icon"><Icon size={22}/></span><span className="setup-pill">{item.status}</span></div><h3>{item.name}</h3><p>{item.desc}</p><button className="secondary-button" onClick={async()=>{if(item.provider==="tiktok"||item.provider==="x"){window.alert(item.status+" — this provider is not enabled yet.");return;}try{const session=fraudGuardAuth?(await fraudGuardAuth.auth.getSession()).data.session:null;if(!session?.access_token){window.location.href="/auth";return;}const response=await fetch("/api/social/connect",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify({provider:item.provider})});const data=await response.json();if(!response.ok)throw new Error(data.error||"Connection could not start.");window.location.href=data.authorization_url;}catch(error){window.alert(error instanceof Error?error.message:"Connection could not start.");}}}>{item.provider==="meta"||item.provider==="google"?"Connect account":"Learn about setup"} <ArrowUpRight size={14}/></button></article>})}
+              {[
+                {name:"Facebook Pages",desc:"Authorize Pages you manage. Available signals depend on approved Page permissions and the assets you select.",icon:Users,provider:"meta",mode:"available",label:"Meta authorization",capability:"Page identity · Page insights",tone:"blue"},
+                {name:"Instagram Professional",desc:"For eligible Creator and Business profiles. Personal Instagram accounts are not supported by this API flow.",icon:Smartphone,provider:"meta",mode:"available",label:"Meta authorization",capability:"Professional profile · Supported media",tone:"pink"},
+                {name:"YouTube",desc:"Connect your Google account to identify your channel and access supported channel data with read-only scope.",icon:PlayCircle,provider:"google",mode:"available",label:"Google authorization",capability:"Channel identity · Channel data",tone:"red"},
+                {name:"WhatsApp Business",desc:"Requires a WhatsApp Business Platform number, Meta business setup, webhook subscription and messaging permissions.",icon:MessageCircle,provider:"none",mode:"setup",label:"Business onboarding",capability:"Dedicated FraudSafe chat · Webhook alerts",tone:"green"},
+                {name:"Telegram",desc:"FraudSafe works as a dedicated bot chat. Users message the bot directly to scan content and receive private advice.",icon:Send,provider:"none",mode:"setup",label:"Bot setup",capability:"Private AI assistant chat",tone:"cyan"},
+                {name:"TikTok",desc:"Requires a TikTok developer app, approved Login Kit and authorized scopes before account connection can be enabled.",icon:PlayCircle,provider:"none",mode:"setup",label:"Developer approval",capability:"Approved profile signals only",tone:"pink"},
+                {name:"X",desc:"Requires an X developer project, OAuth configuration and access to the relevant API tier and scopes.",icon:MessageCircle,provider:"none",mode:"setup",label:"Developer approval",capability:"Approved account signals only",tone:"light"},
+                {name:"Threads",desc:"Requires a Meta developer app configured for Threads API and the specific account permissions it supports.",icon:Globe2,provider:"none",mode:"setup",label:"Threads API setup",capability:"Supported profile and content signals",tone:"light"}
+              ].filter(item=>platformFilter==="all"||(platformFilter==="available"?item.mode==="available":item.mode==="setup")).map((item) => {const Icon=item.icon;return <article className="surface-card integration-card social-card platform-card" key={item.name}><div className="integration-top"><span className={"platform-logo "+item.tone}><Icon size={21}/></span><span className={item.mode==="available"?"platform-ready":"platform-pending"}>{item.mode==="available"?"OAuth available":"Setup required"}</span></div><h3>{item.name}</h3><p>{item.desc}</p><div className="platform-capability"><ShieldCheck size={13}/><span>{item.capability}</span></div>{item.mode==="available"?<button className="secondary-button" disabled={!!connectingProvider} onClick={()=>startSocialConnect(item.provider as "meta"|"google")}>{connectingProvider===item.provider?"Opening secure sign-in…":"Connect "+item.name}<ArrowUpRight size={14}/></button>:<button className="secondary-button setup-button" disabled><LockKeyhole size={13}/> {item.label}</button>}</article>})}
             </div>
-            <div className="integration-note"><LockKeyhole size={18}/><div><b>Connection is not the same as full protection.</b><p>Platforms limit what approved apps can see. FraudGuard can only inspect data each provider makes available and you explicitly authorize. It cannot silently read private DMs, detect every login, or guarantee prevention of account takeover. Live connections require provider app credentials and the database migration documented in the setup guide.</p></div></div>
+            <div className="coverage-panel surface-card"><div className="coverage-heading"><div><h3>What FraudSafe can actually protect</h3><p>Coverage depends on each platform's official API and permissions.</p></div><span className="demo-label">TRANSPARENT ACCESS</span></div><div className="coverage-grid"><div><span className="coverage-icon"><MessageCircle size={17}/></span><b>Messages you send to FraudSafe</b><p>Can be scanned and discussed inside the dedicated bot chat.</p><em className="coverage-on">Available when bot is configured</em></div><div><span className="coverage-icon"><Globe2 size={17}/></span><b>Connected account data</b><p>Only the profile, content or business signals the platform approves.</p><em className="coverage-limited">Permission dependent</em></div><div><span className="coverage-icon"><Fingerprint size={17}/></span><b>Private DMs in other chats</b><p>Not automatically readable through social OAuth. Android notification previews are a separate opt-in feature.</p><em className="coverage-off">Not available by default</em></div></div></div>
+            <div className="integration-note"><LockKeyhole size={18}/><div><b>Your account stays in control.</b><p>FraudSafe is designed to warn and advise, not impersonate you. It will not message your friends, reply to other conversations, change account settings or block people. You approve each connection and can revoke it at any time.</p></div></div>
           </>}
-
+ 
           {active === "business" && <>
             <div className="page-intro"><div className="eyebrow"><span/> ORGANISATION SECURITY</div><h1>Protect your business trust.</h1><p>Prepare a shared security workspace for staff, customer-facing channels and suspicious payment requests.</p></div>
             <div className="business-hero surface-card"><div><span className="demo-label">BUSINESS WORKSPACE PREVIEW</span><h2>Reduce fraud exposure<br/>across your team.</h2><p>Business features will include team roles, approved reporting workflows, brand impersonation monitoring and incident records.</p><button className="primary-button" onClick={() => setBusinessMode(!businessMode)}>{businessMode ? "Hide setup checklist" : "View setup checklist"} <ArrowUpRight size={15}/></button></div><div className="business-graphic"><Building2 size={76}/><span><ShieldCheck size={22}/> TEAM PROTECTION</span></div></div>
