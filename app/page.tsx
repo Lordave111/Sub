@@ -242,7 +242,7 @@ export default function Home() {
           <div className="top-actions">
             <span className="system-status"><i/> Protection engine online</span>
             <button className="icon-button" aria-label="Notifications"><Bell size={18}/><i/></button>
-            <a className="auth-nav-link" href="/community">Community</a><a className="auth-nav-link" href="/portal">My workspace</a><a className="auth-nav-link" href="/auth">Sign in</a><div className="top-avatar">FG</div>
+            <a className="auth-nav-link community-link" href="/community">Community</a><a className="auth-nav-link workspace-link" href="/portal">My workspace</a><a className="auth-nav-link auth-signin" href="/auth">Sign in</a><a className="auth-nav-link auth-create" href="/auth?mode=signup">Create account <ArrowUpRight size={13}/></a><div className="top-avatar">FG</div>
           </div>
         </header>
 
