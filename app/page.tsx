@@ -26,7 +26,7 @@ type ScanResult = {
 const navGroups = [
   { label: "WORKSPACE", items: [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
-    { id: "scanner", label: "Chat & scam detector", icon: FileSearch, tag: "AI" },
+    { id: "scanner", label: "Chat assistant", icon: MessageCircle, tag: "AI" },
     { id: "reports", label: "Threat reports", icon: ShieldAlert },
   ]},
   { label: "PROTECTION", items: [
@@ -123,7 +123,7 @@ export default function Home() {
 
   const pageTitle = useMemo(() => {
     const titles: Record<string, string> = {
-      overview: "Security overview", scanner: "Chat & scam detector", reports: "Threat intelligence",
+      overview: "Security overview", scanner: "FraudSafe chat assistant", reports: "Threat intelligence",
       connections: "Connected accounts", business: "Business protection", activity: "Security activity"
     };
     return titles[active] || "Security overview";
@@ -292,43 +292,19 @@ export default function Home() {
           </>}
 
           {active === "scanner" && <>
-            <div className="page-intro"><div className="eyebrow"><span/> MANUAL THREAT ANALYSIS</div><h1>Check who you are chatting with.</h1><p>Paste a conversation from WhatsApp, Instagram, Facebook, SMS or another platform. FraudGuard checks the full chat for scam tactics, suspicious requests and pressure patterns.</p></div>
-            <div className="scanner-layout">
-              <section className="surface-card scanner-card">
-                <div className="card-heading"><div><h3>New security scan</h3><p>Choose a scan type and add the content below</p></div><span className="secure-tag"><LockKeyhole size={13}/> Private check</span></div>
-                <div className="scan-tabs">
-                  <button className={scanType === "message" ? "scan-tab selected" : "scan-tab"} onClick={() => setScanType("message")}><MessageCircle size={16}/> Message</button>
-                  <button className={scanType === "link" ? "scan-tab selected" : "scan-tab"} onClick={() => setScanType("link")}><Globe2 size={16}/> Website link</button>
-                  <button className={scanType === "investment" ? "scan-tab selected" : "scan-tab"} onClick={() => setScanType("investment")}><WalletCards size={16}/> Investment</button>
-                </div>
-                <form onSubmit={runScan}>
-                  <label className="field-label" htmlFor="scan-content">{scanType === "link" ? "PASTE THE WEBSITE URL" : scanType === "investment" ? "PASTE THE INVESTMENT OFFER" : "PASTE THE MESSAGE OR CHAT"}</label>
-                  <textarea id="scan-content" value={scanInput} onChange={(e) => setScanInput(e.target.value)} placeholder={scanType === "link" ? "https://example.com/claim-prize" : scanType === "investment" ? "Paste the investment offer, promised returns, payment details..." : "Paste the chat conversation here. Include the sender\u2019s messages and your replies so FraudGuard can assess the context..."} rows={8}/>
-                  <div className="input-meta"><span>{scanInput.length} characters</span><span><LockKeyhole size={12}/> Raw chat text is not saved</span></div><p className="muted-copy" style={{margin:"0 0 13px"}}>Paste multiple messages in order. Remove passwords, OTPs, PINs, recovery codes and other private details first. Include timestamps or sender labels if useful.</p>
-                  {error && <p className="form-error">{error}</p>}
-                  <button className="primary-button scan-submit" type="submit" disabled={scanning}>{scanning ? <><span className="spinner"/> Checking signals...</> : <><Search size={17}/> Analyse content <ArrowUpRight size={16}/></>}</button>
-                </form>
-                <div className="privacy-note"><ShieldCheck size={16}/><span><b>Privacy first.</b> FraudGuard does not save raw scan text. If enabled, AI analysis sends the text to OpenAI and URL reputation checks send links to the configured providers.</span></div>
-              </section>
-              <aside className="surface-card scanner-aside">
-                <div className="aside-icon"><Sparkles size={20}/></div><h3>What gets checked in your chat?</h3>
-                <ul><li><Check size={15}/> Fake bank, support or friend identities</li><li><Check size={15}/> Requests for money, OTPs or passwords</li><li><Check size={15}/> Gift-card, crypto and advance-fee scams</li><li><Check size={15}/> Romance, job and investment manipulation</li><li><Check size={15}/> Urgency, secrecy and suspicious links</li></ul>
-                <div className="disclaimer-box"><AlertTriangle size={16}/><p>This scanner identifies warning signs, not a person\u2019s identity. A low score does not prove the sender is safe.</p></div>
-              </aside>
+            <div className="page-intro"><div className="eyebrow"><span/> YOUR AI PROTECTION COMPANION</div><h1>Talk to FraudSafe.</h1><p>Everyday scam checks belong in your private FraudSafe chat. Send a message, link or suspicious offer and ask follow-up questions naturally.</p></div>
+            <div className="chat-launch-grid">
+              <article className="chat-launch-card telegram-chat"><div className="chat-launch-top"><span className="chat-app-icon"><Send size={23}/></span><span className="platform-ready">Private bot chat</span></div><h2>FraudSafe on Telegram</h2><p>Open a dedicated bot conversation to scan suspicious messages, inspect links, ask questions and get account-safety guidance.</p>{process.env.NEXT_PUBLIC_FRAUDSAFE_TELEGRAM_URL ? <a className="primary-button" href={process.env.NEXT_PUBLIC_FRAUDSAFE_TELEGRAM_URL} target="_blank" rel="noreferrer">Open Telegram chat <ArrowUpRight size={15}/></a> : <span className="chat-not-configured"><Clock3 size={14}/> Bot link not configured yet</span>}</article>
+              <article className="chat-launch-card whatsapp-chat"><div className="chat-launch-top"><span className="chat-app-icon"><MessageCircle size={23}/></span><span className="platform-ready">Business chat</span></div><h2>FraudSafe on WhatsApp</h2><p>Chat with the official FraudSafe business number. Ask for scam checks and receive private replies in that same conversation.</p>{process.env.NEXT_PUBLIC_FRAUDSAFE_WHATSAPP_URL ? <a className="primary-button" href={process.env.NEXT_PUBLIC_FRAUDSAFE_WHATSAPP_URL} target="_blank" rel="noreferrer">Open WhatsApp chat <ArrowUpRight size={15}/></a> : <span className="chat-not-configured"><Clock3 size={14}/> Business chat link not configured yet</span>}</article>
             </div>
-            {result && <section className="surface-card result-card">
-              <div className="result-head"><div><div className="eyebrow"><span/> SCAN COMPLETE</div><h2>Assessment results</h2></div><button className="secondary-button" onClick={copyResult}><Copy size={15}/>{copied ? "Copied" : "Copy report"}</button><button className="secondary-button" onClick={runAiAnalysis} disabled={aiBusy}><Sparkles size={15}/>{aiBusy ? "AI reviewing..." : "AI review"}</button></div>
-              <div className="result-summary">
-                <div className={"score-ring " + result.level}><strong>{result.score}</strong><small>/100</small></div>
-                <div className="result-copy"><span className={"risk-pill " + result.level}>{result.level.toUpperCase()} RISK INDICATORS</span><h3>{result.verdict}</h3><p>{result.summary}</p></div>
-              </div>
-              <div className="result-columns"><div><h4>Signals detected</h4>{result.signals.length ? result.signals.map((signal, index) => <div className="signal-row" key={index}><span className={"signal-dot " + signal.severity}/><div><b>{signal.title}</b><p>{signal.detail}</p></div></div>) : <p className="muted-copy">No obvious indicators were found by these basic checks.</p>}</div><div><h4>Recommended next steps</h4>{result.recommendations.map((tip, index) => <div className="recommendation" key={index}><Check size={15}/><span>{tip}</span></div>)}</div></div>
-              {aiResult && <div className="ai-review-panel"><div className="eyebrow"><span/> AI-ASSISTED REVIEW</div><h3>{aiResult.risk_level.toUpperCase()} RISK REVIEW</h3><p>{aiResult.summary}</p><div className="ai-review-list">{aiResult.signals.map((s: any, i: number) => <div key={i}><b>{s.title}</b><small>{s.detail}</small></div>)}</div><p className="result-footnote">{aiResult.disclaimer}</p></div>}
-              <p className="result-footnote">Checked {new Date(result.checkedAt).toLocaleString()} · Automated screening can miss scams and produce false positives. Verify independently before sending money or sharing information.</p>
-            </section>}
+            <div className="chat-command-panel surface-card"><div className="card-heading"><div><h3>What you can ask in the chat</h3><p>No need to memorise commands — ordinary questions work too.</p></div><span className="demo-label">CHAT FEATURES</span></div><div className="chat-command-grid">
+              {[{cmd:"/scan",title:"Scan a message",desc:"Check a suspicious DM, SMS or conversation excerpt."},{cmd:"/link",title:"Check a link",desc:"Look for phishing signals and suspicious destinations."},{cmd:"/explain",title:"Explain a warning",desc:"Understand why a message or offer looks risky."},{cmd:"/protect",title:"Account safety help",desc:"Get steps to secure a compromised or targeted account."},{cmd:"/report",title:"Report a suspicious incident",desc:"Get directed to the private reporting workflow."},{cmd:"/history",title:"View scan history",desc:"Open your signed-in dashboard to review saved scan summaries."},{cmd:"/settings",title:"Protection settings",desc:"Manage account connections and security preferences."},{cmd:"/help",title:"Show chat help",desc:"See available commands and privacy information."}].map(item=><div className="chat-command-row" key={item.cmd}><code>{item.cmd}</code><div><b>{item.title}</b><small>{item.desc}</small></div></div>)}
+            </div></div>
+            <div className="chat-privacy-panel"><ShieldCheck size={19}/><div><b>Private by design</b><p>FraudSafe only analyses content users deliberately send to its dedicated chat. It does not silently read unrelated DMs, message contacts, impersonate users or take actions on their accounts. Never send OTPs, PINs, passwords or recovery phrases.</p></div></div>
+            <div className="chat-dashboard-link"><div><b>Manage your connected accounts on the website</b><p>Connect eligible social profiles, review permissions, disconnect services and manage account security.</p></div><button className="secondary-button" onClick={()=>navigate("connections")}>Open account centre <ArrowUpRight size={14}/></button></div>
           </>}
-
-          {active === "reports" && <>
+ 
+{active === "reports" && <>
             <div className="page-intro"><div className="eyebrow"><span/> COMMUNITY DEFENCE</div><h1>Threat intelligence.</h1><p>Document suspicious activity and learn the patterns criminals use. Reports shown here are sample content until secure submissions are connected.</p></div>
             <div className="content-grid reports-grid">
               <section className="surface-card"><div className="card-heading"><div><h3>Common fraud patterns</h3><p>Examples to help you recognise red flags</p></div><span className="demo-label">SAMPLE LIBRARY</span></div>
