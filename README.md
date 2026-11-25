@@ -16,8 +16,9 @@ FraudGuard is a scam-protection workspace for individuals and organisations. It 
 - Private evidence upload endpoint (10 MB limit, allow-listed file types, report ownership check and quarantine state).
 - Alert preference API for email/high-risk/digest settings.
 - Admin moderation endpoint with an explicit allow-list of Supabase auth user IDs.
+- Private Telegram AI assistant chat with local scam screening and optional OpenAI conversational analysis.
+- WhatsApp Business Cloud API private assistant webhook with Meta signature verification and inbound-message replies.
 - Meta webhook challenge verification and HMAC SHA-256 signature validation.
-- Telegram webhook secret-token validation.
 - Supabase schema with RLS, private evidence bucket, organisation membership, audit trail and report/scans tables.
 
 ## Setup
@@ -41,7 +42,8 @@ FraudGuard is a scam-protection workspace for individuals and organisations. It 
 8. Optional webhooks:
    - `META_APP_SECRET`
    - `META_WEBHOOK_VERIFY_TOKEN`
-   - `TELEGRAM_WEBHOOK_SECRET`
+   - `TELEGRAM_WEBHOOK_SECRET` and `TELEGRAM_BOT_TOKEN` for a Telegram bot. Set its webhook to `https://fgsafe.vercel.app/api/webhooks/telegram` and configure the same secret token in Telegram.
+   - `WHATSAPP_WEBHOOK_VERIFY_TOKEN`, `WHATSAPP_ACCESS_TOKEN`, and `META_APP_SECRET` for WhatsApp Business Cloud API. Subscribe the Meta app to the WhatsApp `messages` webhook field and use `https://fgsafe.vercel.app/api/webhooks/whatsapp` as the callback URL. The WhatsApp user must message the business number first; replies are sent only to that user within the platform's customer-service window.
 10. Social account OAuth (optional):
    - Run `supabase/social-connections.sql` in Supabase SQL Editor.
    - Set `SOCIAL_OAUTH_STATE_SECRET` to a long random secret (32+ characters).
@@ -71,7 +73,8 @@ FraudGuard is a scam-protection workspace for individuals and organisations. It 
 | `POST /api/evidence` | Upload private evidence to quarantine |
 | `PATCH /api/admin/reports/:id` | Allow-listed administrator moderation |
 | `GET, POST /api/webhooks/meta` | Meta webhook verification and signature validation |
-| `POST /api/webhooks/telegram` | Telegram webhook secret validation |
+| `POST /api/webhooks/telegram` | Private Telegram bot chat; replies to direct messages only |
+| `GET, POST /api/webhooks/whatsapp` | WhatsApp Business webhook verification and private inbound-message replies |
 
 Authenticated API calls use `Authorization: Bearer <Supabase access token>`.
 
@@ -83,8 +86,10 @@ Authenticated API calls use `Authorization: Bearer <Supabase access token>`.
 - Reports are private by default. A report must be reviewed before it can be published as a pattern; unverified allegations must not be exposed publicly.
 - Evidence is stored in a private bucket with status `quarantined`. This repository does not yet run antivirus or content-disarm scanning, so files must not be served or trusted until a malware-scanning pipeline marks them clean.
 - Social OAuth supports the initial Meta and Google authorization foundation. It stores access/refresh tokens encrypted server-side; it does not yet run continuous threat monitoring, fetch private DMs, or guarantee account-takeover detection. Users should also revoke app access in the provider's own settings. TikTok and X OAuth are not implemented yet.
-- Meta and Telegram webhooks validate authenticity but intentionally do not process user messages yet. OAuth consent, account mapping, webhook subscription and event handling must be completed before enabling live monitoring.
-- WhatsApp integrations use the official WhatsApp Business Platform. They do not provide covert access to personal WhatsApp chats.
+- The Telegram and WhatsApp chat assistants only process messages users deliberately send to the FraudSafe bot/business number. They do not read other chats, access hidden inboxes, or contact a user's friends or contacts. Telegram group/channel messages are ignored.
+- WhatsApp chat requires the official WhatsApp Business Platform, a configured business phone number, approved app setup and webhook subscription. It cannot operate as an unofficial bot on an ordinary personal WhatsApp account. Replies are limited by Meta's messaging rules and customer-service window.
+- The chat handler does not save the text it receives. If `OPENAI_API_KEY` is enabled, message content is sent to the configured AI provider for analysis; disclose this clearly and tell users not to send passwords, OTPs, PINs or recovery phrases.
+- Platform OAuth connections are separate from chat-bot access. Connecting a social account does not grant private-DM access or automatic monitoring.
 - Alert preferences are stored, but outbound email/SMS/push delivery requires a notification provider and is not yet activated.
 - Organisation membership and owner creation are implemented. Team invitations, detailed role-management UI, billing and full audit-log UI remain follow-up work.
 
