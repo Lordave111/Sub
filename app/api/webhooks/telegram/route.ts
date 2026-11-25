@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     const sent = await fetch("https://api.telegram.org/bot" + token + "/sendMessage", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text: reply, parse_mode: "Markdown", disable_web_page_preview: true }),
+      body: JSON.stringify({ chat_id: chatId, text: reply, disable_web_page_preview: true }),
       cache: "no-store"
     });
     if (!sent.ok) return NextResponse.json({ error: "Telegram could not deliver the reply." }, { status: 502 });
