@@ -60,6 +60,9 @@ export default function Home() {
   const [socialNotice, setSocialNotice] = useState("");
   const [connectingProvider, setConnectingProvider] = useState("");
   const [platformFilter, setPlatformFilter] = useState("all");
+  const [chatMessages, setChatMessages] = useState<{role:"assistant"|"user";content:string}[]>([{role:"assistant",content:"Hi! I’m your private FraudSafe assistant. Send me a suspicious message, link or account concern and I’ll help you assess it. I only see what you choose to share here."}]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatBusy, setChatBusy] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -119,6 +122,27 @@ export default function Home() {
     } finally {
       setConnectingProvider("");
     }
+  }
+
+  async function sendPrivateChat(event: React.FormEvent) {
+    event.preventDefault();
+    const message = chatInput.trim();
+    if (!message || chatBusy) return;
+    const next = [...chatMessages, { role: "user" as const, content: message }];
+    setChatMessages(next);
+    setChatInput("");
+    setChatBusy(true);
+    setError("");
+    try {
+      const session = fraudGuardAuth ? (await fraudGuardAuth.auth.getSession()).data.session : null;
+      if (!session?.access_token) { window.location.href = "/auth"; return; }
+      const response = await fetch("/api/chat", { method:"POST", headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token}, body:JSON.stringify({messages:next.slice(-12)}) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Chat is temporarily unavailable.");
+      setChatMessages((items)=>[...items,{role:"assistant",content:data.reply}]);
+    } catch (err) {
+      setChatMessages((items)=>[...items,{role:"assistant",content:err instanceof Error ? err.message : "I couldn't respond just now. Please try again."}]);
+    } finally { setChatBusy(false); }
   }
 
   const pageTitle = useMemo(() => {
@@ -292,13 +316,23 @@ export default function Home() {
           </>}
 
           {active === "scanner" && <>
-            <div className="page-intro"><div className="eyebrow"><span/> YOUR AI PROTECTION COMPANION</div><h1>Talk to FraudSafe.</h1><p>Everyday scam checks belong in your private FraudSafe chat. Send a message, link or suspicious offer and ask follow-up questions naturally.</p></div>
-            <div className="chat-launch-grid">
-              <article className="chat-launch-card telegram-chat"><div className="chat-launch-top"><span className="chat-app-icon"><Send size={23}/></span><span className="platform-ready">Private bot chat</span></div><h2>FraudSafe on Telegram</h2><p>Open a dedicated bot conversation to scan suspicious messages, inspect links, ask questions and get account-safety guidance.</p>{process.env.NEXT_PUBLIC_FRAUDSAFE_TELEGRAM_URL ? <a className="primary-button" href={process.env.NEXT_PUBLIC_FRAUDSAFE_TELEGRAM_URL} target="_blank" rel="noreferrer">Open Telegram chat <ArrowUpRight size={15}/></a> : <span className="chat-not-configured"><Clock3 size={14}/> Bot link not configured yet</span>}</article>
-              <article className="chat-launch-card whatsapp-chat"><div className="chat-launch-top"><span className="chat-app-icon"><MessageCircle size={23}/></span><span className="platform-ready">Business chat</span></div><h2>FraudSafe on WhatsApp</h2><p>Chat with the official FraudSafe business number. Ask for scam checks and receive private replies in that same conversation.</p>{process.env.NEXT_PUBLIC_FRAUDSAFE_WHATSAPP_URL ? <a className="primary-button" href={process.env.NEXT_PUBLIC_FRAUDSAFE_WHATSAPP_URL} target="_blank" rel="noreferrer">Open WhatsApp chat <ArrowUpRight size={15}/></a> : <span className="chat-not-configured"><Clock3 size={14}/> Business chat link not configured yet</span>}</article>
+            <div className="page-intro"><div className="eyebrow"><span/> YOUR PRIVATE SECURITY COMPANION</div><h1>Chat with FraudSafe.</h1><p>Your personal AI security chat. Ask questions naturally, paste suspicious messages or links, and get practical safety guidance.</p></div>
+            <section className="private-chat-shell surface-card">
+              <div className="private-chat-head"><div className="chat-avatar"><ShieldCheck size={22}/></div><div><b>FraudSafe AI</b><small><i/> Private conversation · only content you send is analysed</small></div><span className="private-lock"><LockKeyhole size={14}/> PRIVATE</span></div>
+              <div className="private-chat-messages" aria-live="polite">
+                {chatMessages.map((message,index)=><div key={index} className={message.role==="user"?"chat-bubble-row user-row":"chat-bubble-row"}><span className="chat-bubble-avatar">{message.role==="user"?"YOU":<ShieldCheck size={15}/>}</span><div className={message.role==="user"?"chat-bubble user-bubble":"chat-bubble assistant-bubble"}>{message.content}</div></div>)}
+                {chatBusy && <div className="chat-typing"><span/><span/><span/> FraudSafe is reviewing your message…</div>}
+              </div>
+              <form className="private-chat-composer" onSubmit={sendPrivateChat}><textarea aria-label="Message FraudSafe" rows={2} value={chatInput} onChange={(e)=>setChatInput(e.target.value)} placeholder="Ask about a suspicious message, link, payment request or account alert…" maxLength={5000}/><button className="primary-button" type="submit" disabled={chatBusy||!chatInput.trim()}><Send size={16}/> {chatBusy?"Thinking…":"Send message"}</button></form>
+              <p className="chat-safety-footnote"><LockKeyhole size={13}/> Don't send passwords, OTPs, PINs, recovery codes or full payment details. AI checks can be wrong; verify important claims independently.</p>
+            </section>
+            <div className="chat-suggestion-grid">
+              {["Someone says my account will be blocked unless I pay. Is this a scam?","Can you check this suspicious link?","What should I do if I shared an OTP?"].map((prompt)=><button key={prompt} className="chat-suggestion" onClick={()=>setChatInput(prompt)}><Sparkles size={14}/>{prompt}</button>)}
             </div>
-            <div className="chat-command-panel surface-card"><div className="card-heading"><div><h3>What you can ask in the chat</h3><p>No need to memorise commands — ordinary questions work too.</p></div><span className="demo-label">CHAT FEATURES</span></div><div className="chat-command-grid">
-              {[{cmd:"/scan",title:"Scan a message",desc:"Check a suspicious DM, SMS or conversation excerpt."},{cmd:"/link",title:"Check a link",desc:"Look for phishing signals and suspicious destinations."},{cmd:"/explain",title:"Explain a warning",desc:"Understand why a message or offer looks risky."},{cmd:"/protect",title:"Account safety help",desc:"Get steps to secure a compromised or targeted account."},{cmd:"/report",title:"Report a suspicious incident",desc:"Get directed to the private reporting workflow."},{cmd:"/history",title:"View scan history",desc:"Open your signed-in dashboard to review saved scan summaries."},{cmd:"/settings",title:"Protection settings",desc:"Manage account connections and security preferences."},{cmd:"/help",title:"Show chat help",desc:"See available commands and privacy information."}].map(item=><div className="chat-command-row" key={item.cmd}><code>{item.cmd}</code><div><b>{item.title}</b><small>{item.desc}</small></div></div>)}
+            <div className="chat-privacy-panel"><ShieldCheck size={19}/><div><b>Your connected accounts stay under your control</b><p>Connecting an account does not give FraudSafe unrestricted access to private DMs. This chat only analyses what you deliberately send here and data available through approved platform permissions.</p></div></div>
+          </>}
+ 
+          {[{cmd:"/scan",title:"Scan a message",desc:"Check a suspicious DM, SMS or conversation excerpt."},{cmd:"/link",title:"Check a link",desc:"Look for phishing signals and suspicious destinations."},{cmd:"/explain",title:"Explain a warning",desc:"Understand why a message or offer looks risky."},{cmd:"/protect",title:"Account safety help",desc:"Get steps to secure a compromised or targeted account."},{cmd:"/report",title:"Report a suspicious incident",desc:"Get directed to the private reporting workflow."},{cmd:"/history",title:"View scan history",desc:"Open your signed-in dashboard to review saved scan summaries."},{cmd:"/settings",title:"Protection settings",desc:"Manage account connections and security preferences."},{cmd:"/help",title:"Show chat help",desc:"See available commands and privacy information."}].map(item=><div className="chat-command-row" key={item.cmd}><code>{item.cmd}</code><div><b>{item.title}</b><small>{item.desc}</small></div></div>)}
             </div></div>
             <div className="chat-privacy-panel"><ShieldCheck size={19}/><div><b>Private by design</b><p>FraudSafe only analyses content users deliberately send to its dedicated chat. It does not silently read unrelated DMs, message contacts, impersonate users or take actions on their accounts. Never send OTPs, PINs, passwords or recovery phrases.</p></div></div>
             <div className="chat-dashboard-link"><div><b>Manage your connected accounts on the website</b><p>Connect eligible social profiles, review permissions, disconnect services and manage account security.</p></div><button className="secondary-button" onClick={()=>navigate("connections")}>Open account centre <ArrowUpRight size={14}/></button></div>
