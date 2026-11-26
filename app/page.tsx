@@ -332,13 +332,7 @@ export default function Home() {
             <div className="chat-privacy-panel"><ShieldCheck size={19}/><div><b>Your connected accounts stay under your control</b><p>Connecting an account does not give FraudSafe unrestricted access to private DMs. This chat only analyses what you deliberately send here and data available through approved platform permissions.</p></div></div>
           </>}
  
-          {[{cmd:"/scan",title:"Scan a message",desc:"Check a suspicious DM, SMS or conversation excerpt."},{cmd:"/link",title:"Check a link",desc:"Look for phishing signals and suspicious destinations."},{cmd:"/explain",title:"Explain a warning",desc:"Understand why a message or offer looks risky."},{cmd:"/protect",title:"Account safety help",desc:"Get steps to secure a compromised or targeted account."},{cmd:"/report",title:"Report a suspicious incident",desc:"Get directed to the private reporting workflow."},{cmd:"/history",title:"View scan history",desc:"Open your signed-in dashboard to review saved scan summaries."},{cmd:"/settings",title:"Protection settings",desc:"Manage account connections and security preferences."},{cmd:"/help",title:"Show chat help",desc:"See available commands and privacy information."}].map(item=><div className="chat-command-row" key={item.cmd}><code>{item.cmd}</code><div><b>{item.title}</b><small>{item.desc}</small></div></div>)}
-            </div></div>
-            <div className="chat-privacy-panel"><ShieldCheck size={19}/><div><b>Private by design</b><p>FraudSafe only analyses content users deliberately send to its dedicated chat. It does not silently read unrelated DMs, message contacts, impersonate users or take actions on their accounts. Never send OTPs, PINs, passwords or recovery phrases.</p></div></div>
-            <div className="chat-dashboard-link"><div><b>Manage your connected accounts on the website</b><p>Connect eligible social profiles, review permissions, disconnect services and manage account security.</p></div><button className="secondary-button" onClick={()=>navigate("connections")}>Open account centre <ArrowUpRight size={14}/></button></div>
-          </>}
- 
-{active === "reports" && <>
+          {active === "reports" && <>
             <div className="page-intro"><div className="eyebrow"><span/> COMMUNITY DEFENCE</div><h1>Threat intelligence.</h1><p>Document suspicious activity and learn the patterns criminals use. Reports shown here are sample content until secure submissions are connected.</p></div>
             <div className="content-grid reports-grid">
               <section className="surface-card"><div className="card-heading"><div><h3>Common fraud patterns</h3><p>Examples to help you recognise red flags</p></div><span className="demo-label">SAMPLE LIBRARY</span></div>
