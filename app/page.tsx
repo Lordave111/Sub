@@ -24,13 +24,13 @@ type ScanResult = {
 };
 
 const navGroups = [
-  { label: "WORKSPACE", items: [
+  { label: "YOUR PROTECTION", items: [
+    { id: "connections", label: "Connect social accounts", icon: Link2, tag: "START" },
+    { id: "scanner", label: "Private AI chat", icon: MessageCircle, tag: "AI" },
     { id: "overview", label: "Overview", icon: LayoutDashboard },
-    { id: "scanner", label: "Chat assistant", icon: MessageCircle, tag: "AI" },
-    { id: "reports", label: "Threat reports", icon: ShieldAlert },
   ]},
-  { label: "PROTECTION", items: [
-    { id: "connections", label: "Connected accounts", icon: Link2 },
+  { label: "WORKSPACE", items: [
+    { id: "reports", label: "Threat reports", icon: ShieldAlert },
     { id: "business", label: "Business security", icon: Building2 },
     { id: "activity", label: "Security activity", icon: Activity },
   ]},
@@ -43,7 +43,7 @@ const demoThreats = [
 ];
 
 export default function Home() {
-  const [active, setActive] = useState("overview");
+  const [active, setActive] = useState("connections");
   const [mobileNav, setMobileNav] = useState(false);
   const [scanInput, setScanInput] = useState("");
   const [scanType, setScanType] = useState<"message" | "link" | "investment">("message");
@@ -315,7 +315,7 @@ export default function Home() {
           </>}
 
           {active === "connections" && <>
-            <div className="page-intro"><div className="eyebrow"><span/> SOCIAL ACCOUNT PROTECTION</div><h1>Your security command centre.</h1><p>Connect eligible accounts, review permissions and see exactly which protection features each platform supports.</p></div>
+            <div className="page-intro"><div className="eyebrow"><span/> START HERE · CONNECT YOUR SOCIALS</div><h1>Protect every social account.</h1><p>Connect your eligible profiles first. Then use your private FraudSafe AI chat for suspicious messages, links and account-safety questions.</p></div>
             <div className="social-connect-hero surface-card">
               <div className="social-connect-copy"><span className="secure-tag"><ShieldCheck size={14}/> PRIVATE BY DESIGN</span><h2>One place to manage<br/><span>your digital identity.</span></h2><p>Authorize each platform securely. FraudSafe never asks for your social-media password and never sends messages to your contacts.</p><div className="social-benefits"><span><Check size={14}/> Official sign-in only</span><span><Check size={14}/> Read-only where available</span><span><Check size={14}/> Revoke access anytime</span></div></div>
               <div className="social-connect-art"><div className="social-orbit"><ShieldCheck size={58}/></div><span className="social-chip chip-a"><Activity size={14}/> Account signals</span><span className="social-chip chip-b"><Bell size={14}/> Private alerts</span></div>
