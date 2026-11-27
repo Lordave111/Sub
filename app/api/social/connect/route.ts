@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const state = await signState(statePayload);
     let authorizationUrl: URL;
     if (provider === "meta") {
-      authorizationUrl = new URL("https://www.facebook.com/v27.0/dialog/oauth");
+      authorizationUrl = new URL("https://www.facebook.com/v21.0/dialog/oauth");
       authorizationUrl.searchParams.set("client_id", required("META_APP_ID"));
       authorizationUrl.searchParams.set("redirect_uri", redirectUri);
       authorizationUrl.searchParams.set("response_type", "code");
