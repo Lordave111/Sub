@@ -42,7 +42,8 @@ export async function POST(request: Request) {
         },
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
-          tools: [{ google_search: {} }],\n          contents: safeMessages.map((message) => ({
+          tools: [{ google_search: {} }],
+          contents: safeMessages.map((message) => ({
             role: message.role === "assistant" ? "model" : "user",
             parts: [{ text: message.content }]
           })),
