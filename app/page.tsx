@@ -292,6 +292,18 @@ export default function Home() {
                 <div className="floating-signal signal-two"><span><Activity size={13}/></span> Threat analysis</div>
               </div>
             </section>
+            <section className="safety-studio">
+              <div className="studio-heading">
+                <div><span className="studio-kicker"><Sparkles size={14}/> YOUR PERSONAL FRAUD RADAR</span><h2>Make your next move a <em>safe one.</em></h2><p>Choose a situation. FraudSafe will guide you to the right check and show you what to do next.</p></div>
+                <div className="radar-visual" aria-label="Animated security radar"><span className="radar-ring ring-one"/><span className="radar-ring ring-two"/><span className="radar-sweep"/><span className="radar-core"><ShieldCheck size={27}/></span><i className="radar-blip blip-one"/><i className="radar-blip blip-two"/></div>
+              </div>
+              <div className="scenario-grid">
+                <button className="scenario-card" onClick={() => {setScanType("message");navigate("scanner");}}><span className="scenario-icon"><MessageCircle size={19}/></span><span className="scenario-tag">01 / MESSAGE</span><b>Someone is pressuring me</b><small>Check urgent WhatsApp, SMS and social DMs before you reply.</small><span className="scenario-action">Check a message <ArrowUpRight size={14}/></span></button>
+                <button className="scenario-card" onClick={() => {setScanType("link");navigate("scanner");}}><span className="scenario-icon"><Globe2 size={19}/></span><span className="scenario-tag">02 / WEBSITE</span><b>A link wants my details</b><small>Look for phishing clues before signing in or entering card details.</small><span className="scenario-action">Inspect a link <ArrowUpRight size={14}/></span></button>
+                <button className="scenario-card" onClick={() => {setScanType("investment");navigate("scanner");}}><span className="scenario-icon"><WalletCards size={19}/></span><span className="scenario-tag">03 / PAYMENT</span><b>An offer sounds too good</b><small>Review investment returns, giveaways and payment requests.</small><span className="scenario-action">Review an offer <ArrowUpRight size={14}/></span></button>
+              </div>
+              <div className="advice-strip"><span className="advice-mark"><Zap size={17}/></span><div><b>One rule that can save you money</b><p>Never pay a release fee or share an OTP to receive a prize, delivery, refund or account upgrade. Pause and verify through the company’s official app or website.</p></div><a href="/auth?mode=signup">Get protected <ArrowUpRight size={14}/></a></div>
+            </section>
             <div className="section-heading"><div><h3>Protection at a glance</h3><p>Your workspace status and available tools</p></div><span className="demo-label">PREVIEW DATA</span></div>
             <div className="stats-grid">
               <article className="stat-card"><div className="stat-top"><span>SCANS RUN</span><span className="stat-icon violet"><FileSearch size={17}/></span></div><strong>—</strong><small>No scans recorded yet</small></article>
