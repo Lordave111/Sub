@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { ArrowUpRight, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 
 export default function ResetPasswordPage() {
   const [client, setClient] = useState<SupabaseClient | null>(null);
@@ -57,7 +58,7 @@ export default function ResetPasswordPage() {
   }
 
   return <main className="result-page"><section className="result-card reset-card">
-    <div className="reset-brand"><span className="brand-mark">S</span><strong>sub<span className="brand-dot">.</span></strong></div>
+    <div className="reset-brand"><span className="brand-mark"><ShieldCheck size={22}/></span><strong>FRAUD<span className="brand-dot">GUARD</span></strong></div>
     <div className="reset-shield"><ShieldCheck size={23}/></div>
     <h1>Choose a new password</h1>
     <p>Create a strong password to secure your Sub account.</p>
@@ -69,6 +70,6 @@ export default function ResetPasswordPage() {
       {notice && <p className="auth-notice">{notice}</p>}
       <button className="auth-submit" disabled={busy}>{busy ? "Updating password…" : "Update password"} <ArrowUpRight size={16}/></button>
     </form> : <p className="auth-notice">{notice || "Checking your secure reset link…"}</p>}
-    <a className="reset-back" href="/">Back to Sub</a>
+    <Link className="reset-back" href="/auth">Back to FraudGuard sign in</Link>
   </section></main>;
 }
