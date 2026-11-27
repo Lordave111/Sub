@@ -80,7 +80,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "FraudSafe could not prepare a reply. Please try again." }, { status: 502 });
     }
 
-    const groundingChunks = data?.candidates?.[0]?.groundingMetadata?.groundingChunks || [];\n    const sources = groundingChunks\n      .map((chunk: any) => chunk?.web)\n      .filter((web: any) => typeof web?.uri === "string" && /^https?:\\/\\//i.test(web.uri))\n      .map((web: any) => ({ title: typeof web.title === "string" && web.title.trim() ? web.title.trim().slice(0, 180) : new URL(web.uri).hostname, uri: web.uri }))\n      .filter((source: {title:string;uri:string}, index: number, all: {title:string;uri:string}[]) => all.findIndex((item) => item.uri === source.uri) === index)\n      .slice(0, 8);\n\n    return NextResponse.json({ reply: reply.slice(0, 6000), sources }, {
+    const groundingChunks = data?.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+    const sources = groundingChunks
+      .map((chunk: any) => chunk?.web)
+      .filter((web: any) => typeof web?.uri === "string" && (web.uri.startsWith("https://") || web.uri.startsWith("http://")))
+      .map((web: any) => ({
+        title: typeof web.title === "string" && web.title.trim()
+          ? web.title.trim().slice(0, 180)
+          : new URL(web.uri).hostname,
+        uri: web.uri
+      }))
+      .filter((source: { title: string; uri: string }, index: number, all: { title: string; uri: string }[]) =>
+        all.findIndex((item) => item.uri === source.uri) === index
+      )
+      .slice(0, 8);
+
+    return NextResponse.json({ reply: reply.slice(0, 6000), sources }, {
       headers: { "Cache-Control": "no-store" }
     });
   } catch (error) {
