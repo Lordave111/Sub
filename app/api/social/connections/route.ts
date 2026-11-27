@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   const userId = await getAuthenticatedUserId(request);
   if (!userId) return NextResponse.json({ error: "Sign in to view connected accounts." }, { status: 401 });
   const response = await supabase("fg_social_connections?select=id,provider,account_name,scopes,status,connected_at,token_expires_at&order=connected_at.desc&user_id=eq." + encodeURIComponent(userId));
-  if (!response.ok) return NextResponse.json({ error: "Could not load connected accounts. Run the social-connections SQL migration first." }, { status: 503 });
+  if (!response.ok) return NextResponse.json({ error: "Connected-account storage is not ready. In Supabase → SQL Editor, run the repository file supabase/social-connections.sql, then reload this page." }, { status: 503 });
   return NextResponse.json({ connections: await response.json() });
 }
 
