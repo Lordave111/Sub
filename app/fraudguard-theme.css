@@ -178,3 +178,69 @@ body{background:radial-gradient(ellipse at 75% 0%,#ffd60018,transparent 35%),#05
 .advice-strip>a{display:flex;align-items:center;gap:5px;color:#ffe45a;font-size:9px;font-weight:800;white-space:nowrap}
 @media(max-width:760px){.safety-studio{padding:18px}.studio-heading h2{font-size:21px}.radar-visual{width:82px;height:82px;flex-basis:82px}.scenario-grid{grid-template-columns:1fr}.scenario-card{min-height:145px}.advice-strip{align-items:flex-start;flex-wrap:wrap}.advice-strip>div{min-width:calc(100% - 48px)}.advice-strip>a{margin-left:44px}}
 @media(prefers-reduced-motion:reduce){.radar-sweep{animation:none}.scenario-card{transition:none}}
+
+
+/* FraudGuard obsidian + electric yellow refresh */
+:root{--bg:#050505;--surface:#101010;--ink:#f5f5f5;--muted:#a3a3a3;--line:#292929;--blue:#ffd600;--green:#ffd600;--red:#ff5757;--amber:#ffd600;--shadow:0 20px 60px #0009}
+html,body{background:#050505!important;color:#f5f5f5!important}
+body{background:radial-gradient(ellipse at 85% 0%,#ffd60012,transparent 32%),#050505!important}
+.sidebar{background:#080808!important;border-color:#262626!important}
+.brand-mark,.workspace-icon{background:#171500!important;color:#ffe34d!important;border-color:#665700!important}
+.brand-name>span,.text-button,.help-card a{color:#ffdf00!important}
+.workspace-switch,.help-card,.surface-card,.stat-card{background:#101010!important;border-color:#2d2d2d!important}
+.nav-item{color:#b7b7b7!important}.nav-item:hover{background:#191919!important;color:#fff!important}
+.nav-item.active{background:#292300!important;color:#ffe34d!important;box-shadow:inset 3px 0 #ffd600,0 8px 24px #0008!important}
+.nav-item.active svg{color:#ffd600!important}
+.topbar{background:#080808ed!important;border-color:#292929!important}
+.breadcrumbs,.breadcrumbs b{color:#e8e8e8!important}
+.system-status i,.eyebrow span,.live-ping{background:#ffd600!important;box-shadow:0 0 0 4px #ffd60022,0 0 16px #ffd60088!important}
+.icon-button,.mobile-menu,.auth-nav-link.auth-signin{background:#111!important;border-color:#414141!important;color:#eee!important}
+.auth-nav-link.auth-create,.primary-button,.scan-submit{background:#ffd600!important;color:#080808!important;border:1px solid #ffe75c!important;box-shadow:0 8px 28px #ffd60022!important}
+.auth-nav-link.auth-create:hover,.primary-button:hover,.scan-submit:hover{background:#ffe34d!important;filter:none!important;box-shadow:0 10px 30px #ffd60035!important}
+.hero-panel{background:radial-gradient(circle at 84% 45%,#ffd60022,transparent 35%),linear-gradient(115deg,#101010,#171717 60%,#201d08)!important;border:1px solid #554900!important}
+.hero-panel:before{background-image:linear-gradient(#ffd6000c 1px,transparent 1px),linear-gradient(90deg,#ffd6000c 1px,transparent 1px)!important}
+.hero-kicker,.eyebrow{color:#e4cc42!important}
+.hero-copy h2 span{background:linear-gradient(90deg,#fff0a0,#ffd600)!important;background-clip:text!important;-webkit-background-clip:text!important;color:transparent!important}
+.hero-button{background:#ffd600!important;color:#080808!important}
+.shield-glow{border-color:#ffd60066!important;background:radial-gradient(circle,#ffd60022,#ffd60005)!important;box-shadow:0 0 85px #ffd60020!important;color:#ffe875!important}
+.shield-orbit{border-color:#ffd60025!important}.orbit-dot{background:#ffd600!important;box-shadow:0 0 13px #ffd600!important}
+.floating-signal{background:#151515e8!important;border-color:#5b500d!important;color:#f5f1d9!important}
+.floating-signal>span{background:#302900!important;color:#ffe34d!important}
+.stat-top,.nav-caption{color:#aaa!important}
+.stat-icon.violet,.stat-icon.blue,.stat-icon.green,.quick-icon.purple,.quick-icon.blue{background:#211d08!important;color:#ffdf37!important}
+.stat-icon.red,.quick-icon.orange{background:#291313!important;color:#ff7777!important}
+.threat-row,.quick-action{border-color:#292929!important}.threat-info b,.quick-action b{color:#f3f3f3!important}
+.bottom-banner{background:#171500!important;border-color:#615300!important}.banner-icon{background:#302900!important;color:#ffe34d!important}
+.bottom-banner b,.bottom-banner>a{color:#ffe34d!important}
+.scan-tab.selected{background:#282300!important;border-color:#6d5c00!important;color:#ffe34d!important}
+.scanner-card textarea,.report-form-card textarea,.private-chat-composer textarea{background:#090909!important;border-color:#383838!important;color:#f4f4f4!important}
+.scanner-card textarea:focus,.report-form-card textarea:focus,.private-chat-composer textarea:focus{border-color:#d7b900!important;box-shadow:0 0 0 3px #ffd60017!important}
+.chat-avatar,.chat-bubble-avatar{background:#282300!important;color:#ffe34d!important}
+.assistant-bubble{background:#151515!important;border-color:#353535!important;color:#f1f1f1!important}
+.user-bubble{background:#3b3200!important;border-color:#756400!important;color:#fff4b0!important}
+.private-chat-head{border-color:#303030!important}.private-chat-head small{color:#aaa!important}
+.chat-source-list{border-top:1px solid #393300;margin-top:12px;padding-top:10px;display:flex;flex-direction:column;gap:7px}
+.chat-source-list>b{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#ffe34d}
+.chat-source-list a{display:flex;align-items:center;gap:7px;color:#ffdf37;font-size:11px;overflow-wrap:anywhere}
+.chat-source-list a:hover{text-decoration:underline;color:#fff0a0}
+.chat-suggestion{background:#111!important;border-color:#393300!important;color:#f2e8a4!important}
+.chat-suggestion:hover{background:#211d08!important;border-color:#b59b00!important}
+.chat-privacy-panel{background:#141200!important;border-color:#514600!important;color:#e9df9a!important}
+.auth-shell{background:radial-gradient(ellipse at 18% 16%,#ffd6001c,transparent 34%),#050505!important}
+.auth-shell:before{background-image:linear-gradient(#ffd6000a 1px,transparent 1px),linear-gradient(90deg,#ffd6000a 1px,transparent 1px)!important}
+.auth-card{background:#101010f7!important;border-color:#514600!important;box-shadow:0 30px 100px #000b,0 0 65px #ffd60012!important}
+.auth-brand>span{background:#282300!important;border-color:#776600!important;color:#ffe34d!important}
+.auth-brand b>span,.auth-switch button{color:#ffdf00!important}
+.auth-eyebrow{color:#e4cc42!important}.auth-card h1{color:#f5f5f5!important}
+.auth-description,.auth-switch,.auth-privacy{color:#aaa!important}
+.auth-card form>label{color:#ddd!important}.auth-input{border-color:#494000!important}
+.auth-input input{background:transparent!important;color:#f4f4f4!important}
+.auth-submit{background:#ffd600!important;color:#080808!important}
+.auth-google{background:#171717!important;color:#eee!important;border-color:#414141!important}
+.auth-notice{background:#302900!important;color:#ffe88a!important;border-color:#776600!important}
+.portal-shell{background:#050505!important}.portal-header{background:#0d0d0d!important;border-color:#333!important}
+.portal-login{background:#111!important;border-color:#554900!important}.portal-login h1{color:#f4f4f4!important}
+.portal-login p{color:#aaa!important}.portal-form input,.portal-form select,.portal-form textarea{background:#080808!important;border-color:#444!important;color:#f4f4f4!important}
+.portal-form label{color:#ddd!important}.footer{color:#888!important}.footer span:nth-child(2) svg{color:#ffd600!important}
+@media(hover:hover){.surface-card:hover,.stat-card:hover{border-color:#766400!important;transform:translateY(-2px)}.chat-suggestion:hover{transform:translateY(-1px)}}
+@media(max-width:700px){.chat-source-list a{font-size:10px}.chat-suggestion-grid{grid-template-columns:1fr!important}}
