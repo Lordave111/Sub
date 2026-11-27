@@ -54,14 +54,14 @@ export default function ResetPasswordPage() {
     }
     setNotice("Your password has been updated. You can now sign in with your new password.");
     setBusy(false);
-    setTimeout(() => window.location.replace("/"), 1600);
+    setTimeout(() => window.location.replace("/auth"), 1600);
   }
 
   return <main className="result-page"><section className="result-card reset-card">
     <div className="reset-brand"><span className="brand-mark"><ShieldCheck size={22}/></span><strong>FRAUD<span className="brand-dot">GUARD</span></strong></div>
     <div className="reset-shield"><ShieldCheck size={23}/></div>
     <h1>Choose a new password</h1>
-    <p>Create a strong password to secure your Sub account.</p>
+    <p>Create a strong password to secure your FraudGuard account.</p>
     {ready ? <form className="reset-form" onSubmit={submit}>
       <label htmlFor="new-password">NEW PASSWORD</label>
       <div className="reset-password-field"><input id="new-password" type={showPassword ? "text" : "password"} minLength={8} autoComplete="new-password" placeholder="At least 8 characters" value={password} onChange={e => setPassword(e.target.value)} required/><button type="button" aria-label="Toggle password visibility" onClick={() => setShowPassword(v => !v)}>{showPassword ? <EyeOff size={17}/> : <Eye size={17}/>}</button></div>
