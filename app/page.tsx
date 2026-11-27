@@ -60,7 +60,7 @@ export default function Home() {
   const [socialNotice, setSocialNotice] = useState("");
   const [connectingProvider, setConnectingProvider] = useState("");
   const [platformFilter, setPlatformFilter] = useState("all");
-  const [chatMessages, setChatMessages] = useState<{role:"assistant"|"user";content:string}[]>([{role:"assistant",content:"Hi! I’m your private FraudSafe assistant. Send me a suspicious message, link or account concern and I’ll help you assess it. I only see what you choose to share here."}]);
+  const [chatMessages, setChatMessages] = useState<{role:"assistant"|"user";content:string;sources?:{title:string;uri:string}[]}[]>([{role:"assistant",content:"Hi! I’m your FraudSafe assistant. I can help assess suspicious messages and links, research public websites and portfolios, find publicly listed skills and projects, explain topics, and give practical next steps. I’ll include source links when I search the web."}]);
   const [chatInput, setChatInput] = useState("");
   const [chatBusy, setChatBusy] = useState(false);
 
@@ -139,7 +139,7 @@ export default function Home() {
       const response = await fetch("/api/chat", { method:"POST", headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token}, body:JSON.stringify({messages:next.slice(-12)}) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Chat is temporarily unavailable.");
-      setChatMessages((items)=>[...items,{role:"assistant",content:data.reply}]);
+      setChatMessages((items)=>[...items,{role:"assistant",content:data.reply,sources:Array.isArray(data.sources)?data.sources:[]}]);
     } catch (err) {
       setChatMessages((items)=>[...items,{role:"assistant",content:err instanceof Error ? err.message : "I couldn't respond just now. Please try again."}]);
     } finally { setChatBusy(false); }
@@ -332,14 +332,14 @@ export default function Home() {
             <section className="private-chat-shell surface-card">
               <div className="private-chat-head"><div className="chat-avatar"><ShieldCheck size={22}/></div><div><b>FraudSafe AI</b><small><i/> Private conversation · only content you send is analysed</small></div><span className="private-lock"><LockKeyhole size={14}/> PRIVATE</span></div>
               <div className="private-chat-messages" aria-live="polite">
-                {chatMessages.map((message,index)=><div key={index} className={message.role==="user"?"chat-bubble-row user-row":"chat-bubble-row"}><span className="chat-bubble-avatar">{message.role==="user"?"YOU":<ShieldCheck size={15}/>}</span><div className={message.role==="user"?"chat-bubble user-bubble":"chat-bubble assistant-bubble"}>{message.content}</div></div>)}
+                {chatMessages.map((message,index)=><div key={index} className={message.role==="user"?"chat-bubble-row user-row":"chat-bubble-row"}><span className="chat-bubble-avatar">{message.role==="user"?"YOU":<ShieldCheck size={15}/>}</span><div className={message.role==="user"?"chat-bubble user-bubble":"chat-bubble assistant-bubble"}><div className="chat-message-text">{message.content}</div>{message.sources?.length ? <div className="chat-source-list"><b>Sources</b>{message.sources.map((source,sourceIndex)=><a key={source.uri+sourceIndex} href={source.uri} target="_blank" rel="noreferrer"><ExternalLink size={12}/>{source.title}</a>)}</div> : null}</div></div>)}
                 {chatBusy && <div className="chat-typing"><span/><span/><span/> FraudSafe is reviewing your message…</div>}
               </div>
               <form className="private-chat-composer" onSubmit={sendPrivateChat}><textarea aria-label="Message FraudSafe" rows={2} value={chatInput} onChange={(e)=>setChatInput(e.target.value)} placeholder="Ask about a suspicious message, link, payment request or account alert…" maxLength={5000}/><button className="primary-button" type="submit" disabled={chatBusy||!chatInput.trim()}><Send size={16}/> {chatBusy?"Thinking…":"Send message"}</button></form>
               <p className="chat-safety-footnote"><LockKeyhole size={13}/> Don't send passwords, OTPs, PINs, recovery codes or full payment details. AI checks can be wrong; verify important claims independently.</p>
             </section>
             <div className="chat-suggestion-grid">
-              {["Someone says my account will be blocked unless I pay. Is this a scam?","Can you check this suspicious link?","What should I do if I shared an OTP?"].map((prompt)=><button key={prompt} className="chat-suggestion" onClick={()=>setChatInput(prompt)}><Sparkles size={14}/>{prompt}</button>)}
+              {["Find a public portfolio and list this person’s skills and projects.","Research a company and summarize what it does with sources.","Someone says my account will be blocked unless I pay. Is this a scam?","Can you check this suspicious link?","What should I do if I shared an OTP?"].map((prompt)=><button key={prompt} className="chat-suggestion" onClick={()=>setChatInput(prompt)}><Sparkles size={14}/>{prompt}</button>)}
             </div>
             <div className="chat-privacy-panel"><ShieldCheck size={19}/><div><b>Your connected accounts stay under your control</b><p>Connecting an account does not give FraudSafe unrestricted access to private DMs. This chat only analyses what you deliberately send here and data available through approved platform permissions.</p></div></div>
           </>}
