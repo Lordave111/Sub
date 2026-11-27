@@ -24,6 +24,11 @@ export async function POST(request: Request) {
     const body = await request.json();
     const provider = body.provider;
     if (provider !== "meta" && provider !== "google") return NextResponse.json({ error: "This provider is not enabled yet." }, { status: 400 });
+    required("SOCIAL_OAUTH_STATE_SECRET");
+    const encryptionKey = Buffer.from(required("SOCIAL_TOKEN_ENCRYPTION_KEY"), "base64");
+    if (encryptionKey.length !== 32) throw new Error("SOCIAL_TOKEN_ENCRYPTION_KEY must be a base64-encoded 32-byte key.");
+    if (provider === "meta") { required("META_APP_ID"); required("META_APP_SECRET"); }
+    if (provider === "google") { required("GOOGLE_CLIENT_ID"); required("GOOGLE_CLIENT_SECRET"); }
     const origin = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
     const redirectUri = origin + "/api/social/callback";
     const statePayload = b64url(JSON.stringify({ userId, provider, exp: Date.now() + 10 * 60 * 1000 }));
