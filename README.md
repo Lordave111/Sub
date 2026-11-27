@@ -8,7 +8,7 @@ FraudGuard is a scam-protection workspace for individuals and organisations. It 
 - Rule-based content screening with clear risk indicators and practical safety steps.
 - Optional Google Safe Browsing URL checks and VirusTotal lookups of existing URL reports. Provider keys remain server-side.
 - Authenticated scan-history storage (summary and signals only; raw pasted message content is not stored).
-- Supabase email/password and Google OAuth sign-in page, plus an authenticated personal/business portal.
+- Supabase email/password and Google OAuth sign-in page with persistent browser sessions, password recovery and an authenticated personal/business portal.
 - Optional AI-assisted scam review through the OpenAI Responses API.
 - Moderated community intelligence feed that exposes only reports explicitly approved for publication.
 - Private incident-report submission and report-history API.
@@ -45,13 +45,13 @@ FraudGuard is a scam-protection workspace for individuals and organisations. It 
    - `TELEGRAM_WEBHOOK_SECRET` and `TELEGRAM_BOT_TOKEN` for a Telegram bot. Set its webhook to `https://fgsafe.vercel.app/api/webhooks/telegram` and configure the same secret token in Telegram.
    - `WHATSAPP_WEBHOOK_VERIFY_TOKEN`, `WHATSAPP_ACCESS_TOKEN`, and `META_APP_SECRET` for WhatsApp Business Cloud API. Subscribe the Meta app to the WhatsApp `messages` webhook field and use `https://fgsafe.vercel.app/api/webhooks/whatsapp` as the callback URL. The WhatsApp user must message the business number first; replies are sent only to that user within the platform's customer-service window.
 10. Social account OAuth (optional):
-   - Run `supabase/social-connections.sql` in Supabase SQL Editor.
-   - Set `SOCIAL_OAUTH_STATE_SECRET` to a long random secret (32+ characters).
+   - Run `supabase/social-connections.sql` in Supabase SQL Editor. This step is required; until it is run, the Connected identities panel will report that its storage is unavailable.
+   - Set `NEXT_PUBLIC_SITE_URL=https://fgsafe.vercel.app` (must match the live site origin and OAuth callback domain). Set `SOCIAL_OAUTH_STATE_SECRET` to a long random secret (32+ characters).
    - Set `SOCIAL_TOKEN_ENCRYPTION_KEY` to a base64-encoded 32-byte key. Generate one with `openssl rand -base64 32`.
-   - For Facebook Pages and Instagram Professional, configure a Meta app and set `META_APP_ID` and `META_APP_SECRET`.
-   - For YouTube, configure a Google OAuth web client and set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
+   - For Facebook Pages and Instagram Professional, configure a Meta app and set `META_APP_ID` and `META_APP_SECRET`. Add `https://fgsafe.vercel.app/api/social/callback` to Meta's Valid OAuth Redirect URIs, enable the required Facebook Login and Page/Instagram permissions, and complete Meta App Review where required.
+   - For YouTube, configure a Google OAuth web client and set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. Add `https://fgsafe.vercel.app/api/social/callback` as an Authorized redirect URI in Google Cloud.
    - Add `https://fgsafe.vercel.app/api/social/callback` (or your own domain callback) to each provider's allowed OAuth redirect URLs. `NEXT_PUBLIC_SITE_URL` must match the deployed origin.
-   - Provider app review, business verification, approved permissions and platform-specific eligibility may be required before real accounts can connect.
+   - Provider app review, business verification, approved permissions and platform-specific eligibility may be required before real accounts can connect. The connect endpoint now checks that all required secrets and the 32-byte token-encryption key exist before sending a user to a provider.
 9. Set `FRAUDGUARD_ADMIN_USER_IDS` to a comma-separated list of trusted Supabase auth user UUIDs to enable report moderation.
 
 ## API routes
