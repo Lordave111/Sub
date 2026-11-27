@@ -24,15 +24,8 @@ type ScanResult = {
 };
 
 const navGroups = [
-  { label: "YOUR PROTECTION", items: [
-    { id: "connections", label: "Connect social accounts", icon: Link2, tag: "START" },
-    { id: "scanner", label: "Private AI chat", icon: MessageCircle, tag: "AI" },
-    { id: "overview", label: "Overview", icon: LayoutDashboard },
-  ]},
-  { label: "WORKSPACE", items: [
-    { id: "reports", label: "Threat reports", icon: ShieldAlert },
-    { id: "business", label: "Business security", icon: Building2 },
-    { id: "activity", label: "Security activity", icon: Activity },
+  { label: "ACCOUNT SETUP", items: [
+    { id: "connections", label: "Connect your accounts", icon: Link2, tag: "START" },
   ]},
 ];
 
@@ -225,7 +218,7 @@ export default function Home() {
     <main className="app-shell">
       {mobileNav && <button className="mobile-scrim" aria-label="Close navigation" onClick={() => setMobileNav(false)} />}
       <aside className={mobileNav ? "sidebar sidebar-open" : "sidebar"}>
-        <a className="brand" href="#" onClick={() => navigate("overview")}>
+        <a className="brand" href="#" onClick={() => navigate("connections")}>
           <span className="brand-mark"><ShieldCheck size={21} strokeWidth={2.4}/></span>
           <span className="brand-name">Fraud<span>Guard</span><small>SECURITY INTELLIGENCE</small></span>
         </a>
@@ -264,9 +257,9 @@ export default function Home() {
           <button className="mobile-menu" onClick={() => setMobileNav(true)} aria-label="Open navigation"><Menu/></button>
           <div className="breadcrumbs"><span>Workspace</span><ChevronRight size={14}/><b>{pageTitle}</b></div>
           <div className="top-actions">
-            <span className="system-status"><i/> Protection engine online</span>
+            <span className="system-status"><i/> Secure connection portal</span>
             <button className="icon-button" aria-label="Notifications"><Bell size={18}/><i/></button>
-            <a className="auth-nav-link community-link" href="/community">Community</a><a className="auth-nav-link workspace-link" href="/portal">My workspace</a><a className="auth-nav-link auth-signin" href="/auth">Sign in</a><a className="auth-nav-link auth-create" href="/auth?mode=signup">Create account <ArrowUpRight size={13}/></a><div className="top-avatar">FG</div>
+            <a className="auth-nav-link auth-signin" href="/auth">Sign in</a><a className="auth-nav-link auth-create" href="/auth?mode=signup">Create account <ArrowUpRight size={13}/></a><div className="top-avatar">FG</div>
           </div>
         </header>
 
@@ -355,16 +348,16 @@ export default function Home() {
           </>}
 
           {active === "connections" && <>
-            <div className="page-intro"><div className="eyebrow"><span/> START HERE · CONNECT YOUR SOCIALS</div><h1>Protect every social account.</h1><p>Connect your eligible profiles first. Then use your private FraudSafe AI chat for suspicious messages, links and account-safety questions.</p></div>
+            <div className="page-intro"><div className="eyebrow"><span/> START HERE · CONNECT YOUR SOCIALS</div><h1>Protect every social account.</h1><p>Connect your eligible social accounts here. FraudGuard is designed to deliver its assistant inside supported inboxes and DMs; channel access activates only after the platform integration and permissions are configured.</p></div>
             <div className="social-connect-hero surface-card">
-              <div className="social-connect-copy"><span className="secure-tag"><ShieldCheck size={14}/> PRIVATE BY DESIGN</span><h2>One place to manage<br/><span>your digital identity.</span></h2><p>Authorize each platform securely. FraudSafe never asks for your social-media password and never sends messages to your contacts.</p><div className="social-benefits"><span><Check size={14}/> Official sign-in only</span><span><Check size={14}/> Read-only where available</span><span><Check size={14}/> Revoke access anytime</span></div></div>
+              <div className="social-connect-copy"><span className="secure-tag"><ShieldCheck size={14}/> PRIVATE BY DESIGN</span><h2>One place to manage<br/><span>your digital identity.</span></h2><p>Authorize each platform through its official sign-in. FraudGuard never asks for your social-media password. Inbox assistance is limited to channels and message permissions the platform explicitly approves.</p><div className="social-benefits"><span><Check size={14}/> Official sign-in only</span><span><Check size={14}/> Read-only where available</span><span><Check size={14}/> Revoke access anytime</span></div></div>
               <div className="social-connect-art"><div className="social-orbit"><ShieldCheck size={58}/></div><span className="social-chip chip-a"><Activity size={14}/> Account signals</span><span className="social-chip chip-b"><Bell size={14}/> Private alerts</span></div>
             </div>
             <div className="social-metrics-grid">
               <article className="social-metric"><span className="metric-icon"><Link2 size={17}/></span><div><small>CONNECTED ACCOUNTS</small><b>{socialConnections.length}</b><em>Authorized by you</em></div></article>
               <article className="social-metric"><span className="metric-icon"><ShieldCheck size={17}/></span><div><small>PROTECTION MODE</small><b>Read-only</b><em>No actions on your behalf</em></div></article>
               <article className="social-metric"><span className="metric-icon"><LockKeyhole size={17}/></span><div><small>ACCESS CONTROL</small><b>Revocable</b><em>Disconnect whenever you choose</em></div></article>
-              <article className="social-metric"><span className="metric-icon"><Zap size={17}/></span><div><small>LIVE MONITORING</small><b>Setup pending</b><em>Depends on platform approvals</em></div></article>
+              <article className="social-metric"><span className="metric-icon"><Zap size={17}/></span><div><small>INBOX ASSISTANT</small><b>Channel setup</b><em>Requires approved DM integration</em></div></article>
             </div>
             <div className="section-heading"><div><h3>Connected identities</h3><p>Accounts currently authorized for this FraudSafe profile</p></div><span className="demo-label">{socialConnections.length} CONNECTED</span></div>
             {socialNotice && <p className="social-status-message" role="status"><Shield size={15}/>{socialNotice}</p>}
@@ -383,7 +376,7 @@ export default function Home() {
                 {name:"Threads",desc:"Requires a Meta developer app configured for Threads API and the specific account permissions it supports.",icon:Globe2,provider:"none",mode:"setup",label:"Threads API setup",capability:"Supported profile and content signals",tone:"light"}
               ].filter(item=>platformFilter==="all"||(platformFilter==="available"?item.mode==="available":item.mode==="setup")).map((item) => {const Icon=item.icon;return <article className="surface-card integration-card social-card platform-card" key={item.name}><div className="integration-top"><span className={"platform-logo "+item.tone}><Icon size={21}/></span><span className={item.mode==="available"?"platform-ready":"platform-pending"}>{item.mode==="available"?"OAuth available":"Setup required"}</span></div><h3>{item.name}</h3><p>{item.desc}</p><div className="platform-capability"><ShieldCheck size={13}/><span>{item.capability}</span></div>{item.mode==="available"?<button className="secondary-button" disabled={!!connectingProvider} onClick={()=>startSocialConnect(item.provider as "meta"|"google")}>{connectingProvider===item.provider?"Opening secure sign-in…":"Connect "+item.name}<ArrowUpRight size={14}/></button>:<button className="secondary-button setup-button" disabled><LockKeyhole size={13}/> {item.label}</button>}</article>})}
             </div>
-            <div className="coverage-panel surface-card"><div className="coverage-heading"><div><h3>What FraudSafe can actually protect</h3><p>Coverage depends on each platform's official API and permissions.</p></div><span className="demo-label">TRANSPARENT ACCESS</span></div><div className="coverage-grid"><div><span className="coverage-icon"><MessageCircle size={17}/></span><b>Messages you send to FraudSafe</b><p>Can be scanned and discussed inside the dedicated bot chat.</p><em className="coverage-on">Available when bot is configured</em></div><div><span className="coverage-icon"><Globe2 size={17}/></span><b>Connected account data</b><p>Only the profile, content or business signals the platform approves.</p><em className="coverage-limited">Permission dependent</em></div><div><span className="coverage-icon"><Fingerprint size={17}/></span><b>Private DMs in other chats</b><p>Not automatically readable through social OAuth. Android notification previews are a separate opt-in feature.</p><em className="coverage-off">Not available by default</em></div></div></div>
+            <div className="coverage-panel surface-card"><div className="coverage-heading"><div><h3>What FraudSafe can actually protect</h3><p>Coverage depends on each platform's official API and permissions.</p></div><span className="demo-label">TRANSPARENT ACCESS</span></div><div className="coverage-grid"><div><span className="coverage-icon"><MessageCircle size={17}/></span><b>Assistant in supported inboxes</b><p>Private advice can be delivered through a configured WhatsApp Business or Telegram bot channel.</p><em className="coverage-limited">Channel setup required</em></div><div><span className="coverage-icon"><Globe2 size={17}/></span><b>Connected account data</b><p>Only the profile, content or business signals the platform approves.</p><em className="coverage-limited">Permission dependent</em></div><div><span className="coverage-icon"><Fingerprint size={17}/></span><b>Private DMs in other chats</b><p>Not automatically readable through social OAuth. Android notification previews are a separate opt-in feature.</p><em className="coverage-off">Not available by default</em></div></div></div>
             <div className="integration-note"><LockKeyhole size={18}/><div><b>Your account stays in control.</b><p>FraudSafe is designed to warn and advise, not impersonate you. It will not message your friends, reply to other conversations, change account settings or block people. You approve each connection and can revoke it at any time.</p></div></div>
           </>}
  
