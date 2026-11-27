@@ -7,7 +7,7 @@ import Link from "next/link";
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const client: SupabaseClient | null = url && key ? createClient(url, key, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: "fraudguard.auth.session" }
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
 }) : null;
 
 export default function AuthPage() {
